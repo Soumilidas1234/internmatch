@@ -11,12 +11,15 @@
 
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">AI Examiner</p>
                     <h1>Test your target role</h1>
                     <p class="auth-subtitle">Practice questions for {{ target }}. Scores are for learning, not a hiring decision.</p>
                 </div>
+                <figure class="scene-art ai-idle">
+                    <img src="{{ url_for('static', filename='images/ai-examiner.png') }}" alt="Holographic AI examiner">
+                </figure>
             </section>
 
             {% if not current_question and not finished %}
@@ -41,10 +44,15 @@
             {% endif %}
 
             {% if current_question %}
-            <section class="arena-stage">
+            <section class="examiner-board">
+                <figure class="scene-art ai-idle examiner-orb">
+                    <img src="{{ url_for('static', filename='images/ai-examiner.png') }}" alt="Holographic AI examiner">
+                </figure>
+            <section class="arena-stage examiner-stage">
                 <div class="arena-top">
                     <p class="badge">Round {{ question_number }} / {{ total_questions }}</p>
                     <p class="preview-label">{{ selected }}</p>
+                    <div class="wave-bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
                 </div>
                 <div class="progress-track">
                     <div class="progress-fill" style="width: {{ progress }}%;"></div>
@@ -63,7 +71,7 @@
                 {% else %}
                 <article class="coach-box">
                     <p class="preview-label">AI Coach</p>
-                    <p class="big-score">{{ feedback.score }}/100</p>
+                    <div class="score-ring" data-score="{{ feedback.score }}"><span>{{ feedback.score }}%</span></div>
                     <p>{{ feedback.tip }}</p>
                     <p><strong>Your answer:</strong> {{ feedback.answer }}</p>
                     <p><strong>Strong sample answer:</strong> {{ feedback.model }}</p>
@@ -76,12 +84,15 @@
                 </form>
                 {% endif %}
             </section>
+            </section>
             {% endif %}
 
             {% if finished %}
             <section class="arena-stage">
                 <p class="badge">Exam complete</p>
-                <h2>Overall score: {{ average }}%</h2>
+                <p class="success-pop"><span class="check-glow">✓</span> Exam saved to your progress.</p>
+                <div class="score-ring" data-score="{{ average }}"><span>{{ average }}%</span></div>
+                <h2>Overall score</h2>
                 <p class="auth-subtitle">{{ rank }} · {{ selected }} track for {{ target }}</p>
                 {% if topic_scores %}
                 <p>

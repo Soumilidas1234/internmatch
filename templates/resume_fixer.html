@@ -11,30 +11,38 @@
 
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">Resume Coach</p>
                     <h1>Fix Your Resume</h1>
                     <p class="auth-subtitle">This is a rewrite of YOUR resume for your target role. It does not apply to companies for you.</p>
+                    <div class="header-actions">
+                        <a class="btn btn-outline" href="{{ url_for('resume_analyzer') }}">Analyze / upload resume</a>
+                        {% if plan.has_resume %}
+                        <form method="POST" action="{{ url_for('resume_fixer_pdf') }}">
+                            <button class="btn" type="submit">Download PDF Resume</button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="header-actions">
-                    <a class="btn btn-outline" href="{{ url_for('resume_analyzer') }}">Analyze / upload resume</a>
-                    {% if plan.has_resume %}
-                    <form method="POST" action="{{ url_for('resume_fixer_pdf') }}">
-                        <button class="btn" type="submit">Download PDF Resume</button>
-                    </form>
-                    {% endif %}
-                </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/resume-analysis.png') }}" alt="Resume rewrite hologram">
+                    <span class="scan-line"></span>
+                </figure>
             </section>
 
             <section class="admin-stats">
                 <article class="admin-stat">
                     <p>Current resume score</p>
-                    <h2>{% if plan.resume_score is not none %}{{ plan.resume_score }}%{% else %}—{% endif %}</h2>
+                    {% if plan.resume_score is not none %}
+                    <div class="score-ring" data-score="{{ plan.resume_score }}"><span>{{ plan.resume_score }}%</span></div>
+                    {% else %}
+                    <h2>—</h2>
+                    {% endif %}
                 </article>
                 <article class="admin-stat">
                     <p>Profile strength</p>
-                    <h2>{{ plan.profile.score }}%</h2>
+                    <div class="score-ring" data-score="{{ plan.profile.score }}"><span>{{ plan.profile.score }}%</span></div>
                 </article>
                 <article class="admin-stat">
                     <p>Target role</p>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Saved Questions | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page jd-page">
+        <div class="container">
+            <section class="split-visual reveal">
+                <div>
+                    <p class="badge">MY SAVED QUESTIONS</p>
+                    <h1>Questions to revisit</h1>
+                    <p class="auth-subtitle">Only your saved questions are shown here.</p>
+                    <a class="btn" href="{{ url_for('interview_questions') }}">Back to generator</a>
+                </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/interview-questions.png') }}" alt="Saved interview questions hologram">
+                </figure>
+            </section>
+            {% if saved %}
+            {% for item in saved %}
+            <article class="jd-card iq-question">
+                <p class="preview-label">{{ item.topic }} · {{ item.priority }} · {{ item.difficulty|title }}</p>
+                <h3>{{ item.question }}</h3>
+                {% if item.explanation %}<p class="auth-subtitle">{{ item.explanation }}</p>{% endif %}
+            </article>
+            {% endfor %}
+            {% else %}
+            <section class="empty-state">
+                <h2>No saved questions yet</h2>
+                <a class="btn" href="{{ url_for('interview_questions') }}">Generate interview questions</a>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

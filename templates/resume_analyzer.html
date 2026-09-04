@@ -11,23 +11,40 @@
 
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">AI Tool</p>
                     <h1>AI Resume Analyzer</h1>
                     <p class="auth-subtitle">Paste your resume or upload a .txt / .pdf file. Analysis runs locally.</p>
                 </div>
+                <figure class="scene-art ai-idle">
+                    <img src="{{ url_for('static', filename='images/resume-analysis.png') }}" alt="3D resume scanning">
+                    <span class="scan-line"></span>
+                </figure>
             </section>
 
-            <section class="auth-card">
+            <section class="auth-card scanner-card">
                 <form method="POST" enctype="multipart/form-data">
+                    <label class="drop-scan" for="resume_file">
+                        <span class="preview-label">AI Scanner</span>
+                        <strong>Drop your resume</strong>
+                        <span class="scan-line"></span>
+                        <p>PDF / TXT</p>
+                    </label>
                     <div class="form-group">
                         <label for="resume_text">Paste resume text</label>
-                        <textarea id="resume_text" name="resume_text" rows="8" placeholder="Paste your resume here..."></textarea>
+                        <textarea id="resume_text" name="resume_text" rows="6" placeholder="Paste your resume here..."></textarea>
                     </div>
                     <div class="form-group">
                         <label for="resume_file">Or upload a file</label>
                         <input type="file" id="resume_file" name="resume_file" accept=".txt,.pdf">
+                    </div>
+                    <div class="ai-loader">
+                        <span class="loader-cluster" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                        <div>
+                            <strong>AI ANALYZING</strong>
+                            <p class="loader-copy">Scanning resume… extracting skills… comparing role requirements…</p>
+                        </div>
                     </div>
                     <div class="header-actions">
                         <button class="btn" type="submit">Analyze Resume</button>
@@ -37,10 +54,11 @@
             </section>
 
             {% if result %}
+            <p class="success-pop"><span class="check-glow">✓</span> Resume analyzed successfully.</p>
             <section class="result-grid">
                 <article class="profile-card">
                     <h3>Resume Strength</h3>
-                    <p class="big-score">{{ result.score }}%</p>
+                    <div class="score-ring" data-score="{{ result.score }}"><span>{{ result.score }}%</span></div>
                 </article>
                 <article class="profile-card">
                     <h3>Education mentioned</h3>

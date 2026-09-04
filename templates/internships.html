@@ -11,12 +11,15 @@
 
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">Sample Dataset</p>
                     <h1>Internship Listings</h1>
                     <p class="auth-subtitle">These are fictional sample internships for the academic demo. They are not real job openings. Log in to apply and track applications.</p>
                 </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/job-description.png') }}" alt="Sample listing hologram">
+                </figure>
             </section>
 
             <form class="filter-bar" method="GET" action="{{ url_for('internships') }}">

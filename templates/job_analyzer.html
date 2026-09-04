@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Description Analyzer | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page jd-page">
+        <div class="container">
+            <section class="split-visual reveal">
+                <div>
+                    <p class="badge">Preparation tool</p>
+                    <h1>AI Job Description Analyzer</h1>
+                    <p class="auth-subtitle">Understand what a role requires and discover what you need to prepare. This does not apply to companies for you.</p>
+                </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/job-description.png') }}" alt="Job description hologram">
+                </figure>
+            </section>
+
+            <section class="jd-card jd-glow">
+                <form method="POST" action="{{ url_for('job_analyzer') }}">
+                    <label for="job_description"><strong>Paste Job Description</strong></label>
+                    <textarea id="job_description" name="job_description" rows="12" required placeholder="Paste the complete job description here...">{{ pasted or '' }}</textarea>
+                    <div class="ai-loader"><span class="loader-orb"></span> AI is analyzing this job description...</div>
+                    <button class="btn btn-pulse" type="submit">Analyze Job Description</button>
+                </form>
+            </section>
+
+            {% if result %}
+            <section class="jd-card jd-score-card">
+                <p class="badge">Your Match With This Role</p>
+                <h2>Role preparation match</h2>
+                <div class="score-ring" data-score="{{ result.score }}"><span>{{ result.score }}%</span></div>
+                <p class="auth-subtitle">AI-generated preparation estimate from your profile, resume skills, and this job description. It does not mean you will get the job, pass ATS, or be selected.</p>
+                <p><strong>Detected title:</strong> {{ result.job_title }}</p>
+            </section>
+
+            <section class="intern-grid">
+                <article class="intern-card jd-card">
+                    <h3>Extracted from the description</h3>
+                    <p><strong>Required skills:</strong>
+                        {% if result.required_skills == 'Not detected' %}Not detected
+                        {% else %}{{ result.required_skills | join(', ') }}{% endif %}
+                    </p>
+                    <p><strong>Preferred skills:</strong>
+                        {% if result.preferred_skills == 'Not detected' %}Not detected
+                        {% else %}{{ result.preferred_skills | join(', ') }}{% endif %}
+                    </p>
+                    <p><strong>Tools:</strong>
+                        {% if result.tools == 'Not detected' %}Not detected
+                        {% else %}{{ result.tools | join(', ') }}{% endif %}
+                    </p>
+                    <p><strong>Education:</strong> {{ result.education }}</p>
+                    <p><strong>Experience:</strong> {{ result.experience }}</p>
+                    <p><strong>Work mode:</strong> {{ result.work_mode }}</p>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Skills you already have</h3>
+                    {% for skill in result.have %}
+                    <p class="skill-ok">✓ {{ skill }}</p>
+                    {% else %}
+                    <p>None of the detected required skills are in your current profile or resume.</p>
+                    {% endfor %}
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Skills you need to prepare</h3>
+                    <p><strong>HIGH PRIORITY</strong></p>
+                    {% for skill in result.priority.high %}<p class="skill-missing">⚠ {{ skill }}</p>{% else %}<p>—</p>{% endfor %}
+                    <p><strong>MEDIUM PRIORITY</strong></p>
+                    {% for skill in result.priority.medium %}<p>⚠ {{ skill }}</p>{% else %}<p>—</p>{% endfor %}
+                    <p><strong>LOW PRIORITY</strong></p>
+                    {% for skill in result.priority.low %}<p>{{ skill }}</p>{% else %}<p>—</p>{% endfor %}
+                </article>
+            </section>
+
+            <section class="intern-grid">
+                <article class="intern-card jd-card">
+                    <h3>Matching keywords</h3>
+                    {% if result.matching_keywords %}
+                        <p>{{ result.matching_keywords | join(', ') }}</p>
+                    {% else %}
+                        <p>Not detected</p>
+                    {% endif %}
+                    <h3>Missing keywords</h3>
+                    {% if result.missing_keywords %}
+                        <p>{{ result.missing_keywords | join(', ') }}</p>
+                    {% else %}
+                        <p>Not detected</p>
+                    {% endif %}
+                    <p class="auth-subtitle">Missing keywords may mean skills or ideas to understand. Do not stuff them into a resume if they are not true.</p>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>What this role expects</h3>
+                    {% if result.responsibilities == 'Not detected' %}
+                    <p>Not detected</p>
+                    {% else %}
+                    <ul>
+                        {% for item in result.responsibilities %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <h3>Preparation suggestions</h3>
+                    {% if result.suggestions %}
+                    <ul>
+                        {% for item in result.suggestions %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>Not detected</p>
+                    {% endif %}
+                </article>
+            </section>
+
+            <section class="jd-card">
+                <h2>Your preparation priority</h2>
+                {% if result.priority_rows %}
+                    {% for item in result.priority_rows %}
+                    <article class="jd-priority">
+                        <p><strong>{{ loop.index }}. {{ item.skill }}</strong> — {{ item.level }}</p>
+                        <p>{{ item.reason }}</p>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <p>No missing detected skills from this description.</p>
+                {% endif %}
+            </section>
+
+            <section class="jd-card">
+                <h2>How is this score calculated?</h2>
+                <p>The same local matcher used for role readiness: skill overlap, TF-IDF cosine similarity, and a small neural text score. Weights:</p>
+                <ul>
+                    {% for label, weight in result.weights %}
+                    <li>{{ label }}: {{ weight }}%</li>
+                    {% endfor %}
+                </ul>
+                {% if result.match %}
+                <p>Skill coverage: {{ result.match.skill_score }}% · TF-IDF: {{ result.match.text_similarity_score }}% · Neural: {{ result.match.neural_score }}%</p>
+                <p>{{ result.match.why }}</p>
+                {% endif %}
+            </section>
+            {% endif %}
+
+            {% if history %}
+            <section class="jd-card">
+                <h2>Recent analyses</h2>
+                <div class="intern-grid">
+                    {% for item in history %}
+                    <article class="intern-card">
+                        <h3>{{ item.job_title }}</h3>
+                        <p>{{ item.match_score }}%</p>
+                        <p>{{ item.created_at.strftime('%d %b %Y') if item.created_at else '' }}</p>
+                        <a class="btn btn-small" href="{{ url_for('job_analyzer_detail', analysis_id=item.id) }}">Open</a>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

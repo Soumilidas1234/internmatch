@@ -11,12 +11,15 @@
 
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">AI Tool</p>
                     <h1>Career Roadmap</h1>
                     <p class="auth-subtitle">A step-by-step path for {{ selected }}, based on your profile.</p>
                 </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/career-roadmap.png') }}" alt="Glowing career timeline">
+                </figure>
             </section>
 
             <section class="auth-card">
@@ -33,9 +36,11 @@
                 </form>
             </section>
 
-            <section class="roadmap-list">
+            <section class="roadmap-track">
                 {% for step in steps %}
-                <article class="roadmap-step">
+                <article class="roadmap-node {% if step.status == 'In progress' %}current{% elif step.matched %}done{% else %}locked{% endif %}">
+                    <span class="orb"></span>
+                    <article class="roadmap-step">
                     <span class="step-number">{{ loop.index }}</span>
                     <div>
                         <p class="preview-label">{{ step.level }} · {{ step.status }}</p>
@@ -46,6 +51,7 @@
                             <p class="match-note">You already have: {{ step.matched | join(', ') }}</p>
                         {% endif %}
                     </div>
+                    </article>
                 </article>
                 {% endfor %}
             </section>

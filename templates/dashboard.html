@@ -10,30 +10,66 @@
     {% include "partials/navbar.html" %}
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="command-hero reveal">
                 <div>
-                    <p class="badge">Preparation Dashboard</p>
+                    <p class="badge">AI Career Command Center</p>
                     <h1>Welcome back, {{ user.name }}</h1>
+                    <p class="auth-subtitle">Target role: <strong>{{ target }}</strong></p>
                     <p class="auth-subtitle">Prepare for your next opportunity. This is an AI readiness estimate, not a job guarantee.</p>
+                    <div class="header-actions">
+                        <a class="btn btn-pulse" href="{{ url_for('interview_arena') }}">Start AI Exam →</a>
+                        <a class="btn btn-outline" href="{{ url_for('readiness') }}">Check My Readiness →</a>
+                    </div>
                 </div>
-                <div class="header-actions">
-                    <a class="btn btn-pulse" href="{{ url_for('interview_arena') }}">Start AI Exam</a>
-                    <a class="btn" href="{{ url_for('readiness') }}">Check My Readiness</a>
-                </div>
+                <article class="command-score intern-card">
+                    <p class="preview-label">AI Interview Readiness</p>
+                    <div class="score-ring score-ring-lg" data-score="{{ readiness.score }}"><span>{{ readiness.score }}%</span></div>
+                    <p class="auth-subtitle">Estimated based on your current preparation.</p>
+                    {% if improvement is not none %}
+                    <p class="match-note">{% if improvement > 0 %}↑{% elif improvement < 0 %}↓{% endif %} {{ '+' if improvement > 0 else '' }}{{ improvement }}% vs previous exam</p>
+                    {% endif %}
+                    <p class="auth-subtitle">{{ readiness.disclaimer }}</p>
+                </article>
+                <figure class="scene-art command-art">
+                    <img src="{{ url_for('static', filename='images/role-readiness.png') }}" alt="Role readiness hologram">
+                </figure>
+            </section>
+
+            <section class="command-row">
+                <article class="intern-card insight-card">
+                    <p class="badge">AI Insight</p>
+                    {% if have or missing %}
+                    <p>
+                        {% if have %}Your strongest area is <strong>{{ have[0] }}</strong>.{% endif %}
+                        {% if missing %} Your biggest preparation gap is <strong>{{ missing[0] }}</strong>.{% endif %}
+                        Your next recommended action is to strengthen your weak areas through targeted practice.
+                    </p>
+                    {% else %}
+                    <p>Complete your profile and assessments to receive personalized AI insights.</p>
+                    {% endif %}
+                </article>
+                <article class="intern-card action-card">
+                    <p class="badge">Your next best action</p>
+                    {% if missing %}
+                    <h3>Practice Weak Areas</h3>
+                    <p class="auth-subtitle">Work the gaps for {{ target }}.</p>
+                    <a class="btn" href="{{ url_for('skill_gap') }}">Continue Preparation →</a>
+                    {% elif not last_exam %}
+                    <h3>Start AI Exam</h3>
+                    <p class="auth-subtitle">Test your current knowledge for {{ target }}.</p>
+                    <a class="btn" href="{{ url_for('interview_arena') }}">Continue Preparation →</a>
+                    {% else %}
+                    <h3>Open My Roadmap</h3>
+                    <p class="auth-subtitle">Follow the next stage of your path.</p>
+                    <a class="btn" href="{{ url_for('career_roadmap') }}">Continue Preparation →</a>
+                    {% endif %}
+                </article>
             </section>
 
             <section class="admin-stats">
-                <article class="admin-stat readiness-card">
-                    <p>Interview Readiness</p>
-                    <h2>{{ readiness.score }}%</h2>
-                </article>
-                <article class="admin-stat">
-                    <p>Target Role</p>
-                    <h2>{{ target }}</h2>
-                </article>
                 <article class="admin-stat">
                     <p>Profile Strength</p>
-                    <h2>{{ profile.score }}%</h2>
+                    <div class="score-ring" data-score="{{ profile.score }}"><span>{{ profile.score }}%</span></div>
                 </article>
                 <article class="admin-stat">
                     <p>Skills</p>
@@ -65,7 +101,6 @@
                     <div class="strength-bar"><span style="width: {{ value }}%;"></span></div>
                     {% endfor %}
                     <p class="auth-subtitle">Your biggest improvement opportunity: {{ readiness.opportunity }}</p>
-                    <p class="auth-subtitle">{{ readiness.disclaimer }}</p>
                 </div>
             </section>
 
@@ -95,6 +130,25 @@
                     {% endfor %}
                     <a class="btn btn-small" href="{{ url_for('preparation_plan') }}">Full 14-day plan</a>
                 </article>
+                {% if nav_endpoints is defined and 'resume_interview' in nav_endpoints %}
+                <article class="intern-card">
+                    <h3>Practice From Your Resume</h3>
+                    <p>Prepare for the questions interviewers may ask about your own experience.</p>
+                    <a class="btn btn-small" href="{{ url_for('resume_interview') }}">Start Resume Interview →</a>
+                </article>
+                {% endif %}
+                {% if nav_endpoints is defined and 'interview_questions' in nav_endpoints %}
+                <article class="intern-card">
+                    <h3>AI INTERVIEW QUESTIONS</h3>
+                    <p>Practice questions tailored to your target role.</p>
+                    {% if role_q_stats and role_q_stats.practiced %}
+                    <p>Questions Practiced: {{ role_q_stats.practiced }}</p>
+                    <p>Average Score: {{ role_q_stats.average }}%</p>
+                    <p>Weakest Area: {{ role_q_stats.weakest }}</p>
+                    {% endif %}
+                    <a class="btn btn-small" href="{{ url_for('interview_questions') }}">Practice Interview Questions →</a>
+                </article>
+                {% endif %}
             </section>
 
             <div class="header-actions">

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Interview | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page jd-page ri-page">
+        <div class="container">
+            <section class="split-visual reveal">
+                <div>
+                    <p class="badge">Resume Interview</p>
+                    <h1>Resume-Based Interview Questions</h1>
+                    <p class="auth-subtitle">Practice explaining the projects, skills, and claims on your own resume. This is not the AI Examiner.</p>
+                </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/resume-interview.png') }}" alt="Resume interview hologram">
+                </figure>
+            </section>
+
+            {% if not has_resume %}
+            <section class="jd-card jd-glow ri-empty">
+                <h2>Upload your resume first to generate personalized interview questions.</h2>
+                <p class="auth-subtitle">InternMatch AI uses the resume you already analyzed. There is no second upload form here.</p>
+                <a class="btn btn-pulse" href="{{ url_for('resume_analyzer') }}">Go to Resume Analysis</a>
+            </section>
+            {% else %}
+            <section class="jd-card jd-glow ri-hotspots">
+                <p class="badge">Your Resume Hotspots</p>
+                <h2>Areas interviewers are likely to ask about</h2>
+                <p class="auth-subtitle">Only items found on your resume are listed. Nothing is invented.</p>
+                <div class="ri-hotspot-grid">
+                    {% for item in hotspots %}
+                    <article class="ri-hotspot">
+                        <h3>🔥 {{ item.title }}</h3>
+                        <p>{{ item.why }}</p>
+                    </article>
+                    {% else %}
+                    <p>Add clearer project and skill lines on Resume Analysis so hotspots can be detected.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="jd-card ri-start-card">
+                <h2>Start a practice round</h2>
+                {% if target %}
+                <p class="auth-subtitle">Questions stay grounded in your resume and, where possible, connect to your target role: {{ target }}.</p>
+                {% endif %}
+                {% if active_session %}
+                <p><a class="btn btn-small" href="{{ url_for('resume_interview_play') }}">Continue current session</a></p>
+                {% endif %}
+                <form method="POST" action="{{ url_for('resume_interview') }}">
+                    <p><strong>Difficulty</strong></p>
+                    <div class="ri-choice-row">
+                        <label class="ri-choice"><input type="radio" name="difficulty" value="beginner"> Beginner</label>
+                        <label class="ri-choice"><input type="radio" name="difficulty" value="intermediate"> Intermediate</label>
+                        <label class="ri-choice"><input type="radio" name="difficulty" value="advanced"> Advanced</label>
+                        <label class="ri-choice"><input type="radio" name="difficulty" value="mixed" checked> Mixed Interview</label>
+                    </div>
+                    <p><strong>Question count</strong></p>
+                    <div class="ri-choice-row">
+                        <label class="ri-choice"><input type="radio" name="count" value="5"> 5 Questions</label>
+                        <label class="ri-choice"><input type="radio" name="count" value="10" checked> 10 Questions</label>
+                        <label class="ri-choice"><input type="radio" name="count" value="15"> 15 Questions</label>
+                    </div>
+                    <button class="btn btn-pulse" type="submit">Start Resume Interview</button>
+                </form>
+            </section>
+            {% endif %}
+
+            {% if history %}
+            <section class="jd-card">
+                <h3>Recent resume interviews</h3>
+                <ul>
+                    {% for item in history %}
+                    <li>
+                        <a href="{{ url_for('resume_interview_report', session_id=item.id) }}">
+                            {{ item.difficulty|title }} · {{ item.question_count }} questions ·
+                            {{ item.created_at.strftime('%d %b %Y %H:%M') if item.created_at else '' }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

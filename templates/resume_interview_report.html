@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Interview Report | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page jd-page ri-page">
+        <div class="container">
+            <section class="split-visual reveal">
+                <div>
+                    <p class="badge">RESUME INTERVIEW REPORT</p>
+                    <h1>Practice recap</h1>
+                    <p class="auth-subtitle">{{ report.disclaimer or 'This is practice feedback, not a hiring decision.' }}</p>
+                </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/resume-interview.png') }}" alt="Resume interview recap hologram">
+                </figure>
+            </section>
+
+            <section class="intern-grid">
+                <article class="intern-card jd-card">
+                    <h3>Questions Completed</h3>
+                    <p class="big-score">{{ report.completed or 0 }}</p>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Strong Areas</h3>
+                    <ul>
+                        {% for item in report.strong %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Areas To Review</h3>
+                    <ul>
+                        {% for item in report.review %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+            </section>
+
+            {% if report.alerts %}
+            <section class="jd-card ri-alert">
+                <h2>Preparation Alert</h2>
+                {% for item in report.alerts %}
+                <p>{{ item }}</p>
+                {% endfor %}
+            </section>
+            {% endif %}
+
+            <section class="jd-card">
+                <h2>Questions You Should Practice Again</h2>
+                {% if report.practice %}
+                <ol>
+                    {% for item in report.practice %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ol>
+                {% else %}
+                <p>No extra practice list was flagged from this session.</p>
+                {% endif %}
+            </section>
+
+            <div class="header-actions">
+                <a class="btn btn-pulse" href="{{ url_for('resume_interview') }}">Practice again</a>
+                <a class="btn" href="{{ url_for('resume_analyzer') }}">Review Resume Analysis</a>
+                <a class="btn btn-outline" href="{{ url_for('dashboard') }}">Dashboard</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

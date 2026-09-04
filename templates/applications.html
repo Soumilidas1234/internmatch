@@ -11,13 +11,16 @@
 
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">Application Tracker</p>
                     <h1>My Applications</h1>
                     <p class="auth-subtitle">Track each internship you applied to and update the status as you move through the process.</p>
+                    <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
                 </div>
-                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/progress.png') }}" alt="Application progress hologram">
+                </figure>
             </section>
 
             {% if applications %}

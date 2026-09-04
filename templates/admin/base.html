@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Admin{% endblock %} | InternMatch AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/visual.css') }}">
 </head>
 <body class="admin-body">
     <div class="admin-shell">
@@ -36,5 +37,6 @@
             </div>
         </div>
     </div>
+    <script src="{{ url_for('static', filename='js/visual.js') }}" defer></script>
 </body>
 </html>

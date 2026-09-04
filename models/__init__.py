@@ -104,3 +104,142 @@ class ExamAttempt(db.Model):
 
     def __repr__(self):
         return f"<ExamAttempt {self.id}>"
+
+
+class JobAnalysis(db.Model):
+    """Saved job-description analyses for one logged-in student. Not an application."""
+
+    __tablename__ = "job_analyses"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    job_title = db.Column(db.String(150))
+    job_description = db.Column(db.Text, nullable=False)
+    detected_skills = db.Column(db.Text)
+    matching_skills = db.Column(db.Text)
+    missing_skills = db.Column(db.Text)
+    match_score = db.Column(db.Integer, default=0)
+    result_json = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="job_analyses")
+
+    def result(self):
+        import json
+
+        try:
+            return json.loads(self.result_json or "{}")
+        except (TypeError, ValueError):
+            return {}
+
+    def __repr__(self):
+        return f"<JobAnalysis {self.id}>"
+
+
+class AtsSimulation(db.Model):
+    """Saved ATS-style resume simulations. Educational only; not a real ATS result."""
+
+    __tablename__ = "ats_simulations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    target_role = db.Column(db.String(120))
+    job_description = db.Column(db.Text)
+    ats_score = db.Column(db.Integer, default=0)
+    keyword_score = db.Column(db.Integer, default=0)
+    role_relevance_score = db.Column(db.Integer, default=0)
+    structure_score = db.Column(db.Integer, default=0)
+    result_json = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="ats_simulations")
+
+    def result(self):
+        import json
+
+        try:
+            return json.loads(self.result_json or "{}")
+        except (TypeError, ValueError):
+            return {}
+
+    def __repr__(self):
+        return f"<AtsSimulation {self.id}>"
+
+
+class ResumeInterviewSession(db.Model):
+    """Saved resume-based interview practice. Stores Q&A JSON, not the resume."""
+
+    __tablename__ = "resume_interview_sessions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    difficulty = db.Column(db.String(20))
+    question_count = db.Column(db.Integer, default=0)
+    result_json = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="resume_interview_sessions")
+
+    def result(self):
+        import json
+
+        try:
+            return json.loads(self.result_json or "{}")
+        except (TypeError, ValueError):
+            return {}
+
+    def __repr__(self):
+        return f"<ResumeInterviewSession {self.id}>"
+
+
+class RoleQuestionSet(db.Model):
+    """Generated role/JD interview question bank plus practice answers. Not an exam."""
+
+    __tablename__ = "role_question_sets"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    target_role = db.Column(db.String(120))
+    difficulty = db.Column(db.String(20))
+    question_count = db.Column(db.Integer, default=0)
+    avg_score = db.Column(db.Integer)
+    result_json = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="role_question_sets")
+
+    def result(self):
+        import json
+
+        try:
+            return json.loads(self.result_json or "{}")
+        except (TypeError, ValueError):
+            return {}
+
+    def __repr__(self):
+        return f"<RoleQuestionSet {self.id}>"
+
+
+class SavedRoleQuestion(db.Model):
+    """Questions a student chose to revisit. Scoped to the logged-in user."""
+
+    __tablename__ = "saved_role_questions"
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "question", name="uq_user_saved_role_question"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    set_id = db.Column(db.Integer, db.ForeignKey("role_question_sets.id"))
+    question = db.Column(db.Text, nullable=False)
+    topic = db.Column(db.String(120))
+    category = db.Column(db.String(40))
+    difficulty = db.Column(db.String(20))
+    priority = db.Column(db.String(20))
+    explanation = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="saved_role_questions")
+
+    def __repr__(self):
+        return f"<SavedRoleQuestion {self.id}>"

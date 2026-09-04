@@ -10,13 +10,26 @@
     {% include "partials/navbar.html" %}
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">Retry and improve</p>
                     <h1>Exam progress</h1>
                     <p class="auth-subtitle">Test → find mistakes → learn → retest. Scores are practice estimates only.</p>
                 </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/progress.png') }}" alt="Progress hologram">
+                </figure>
             </section>
+            {% if role_q_stats and role_q_stats.practiced %}
+            <section class="intern-card" style="margin-bottom: 22px;">
+                <h3>Role interview questions</h3>
+                <p>Questions practiced: {{ role_q_stats.practiced }} · Average: {{ role_q_stats.average }}%{% if role_q_stats.weakest %} · Weakest: {{ role_q_stats.weakest }}{% endif %}</p>
+                {% if role_q_stats.average is not none %}
+                <div class="score-ring" data-score="{{ role_q_stats.average }}"><span>{{ role_q_stats.average }}%</span></div>
+                {% endif %}
+                <a class="btn btn-small" href="{{ url_for('interview_questions') }}">Practice Interview Questions</a>
+            </section>
+            {% endif %}
             {% if attempts %}
             <section class="admin-table-wrap">
                 <table class="admin-table">

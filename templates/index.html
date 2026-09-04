@@ -12,70 +12,44 @@
     <main>
         <section class="hero" id="get-started">
             <div class="container hero-grid">
-                <div class="hero-text fade-in">
+                <div class="hero-text reveal">
                     <p class="badge">AI Career Coach</p>
-                    <h1>InternMatch AI</h1>
-                    <p class="tagline">Make mistakes here. Crack interviews there.</p>
+                    <h1>
+                        Make <span class="grad-word">mistakes</span> here.<br>
+                        Crack <span class="grad-word">interviews</span> there.
+                    </h1>
                     <p class="hero-desc">
-                        An AI-powered career preparation platform that analyzes your resume,
-                        discovers your skill gaps, tests your knowledge, identifies your mistakes
-                        and helps you become interview-ready.
+                        InternMatch AI analyzes your resume, identifies your skill gaps, tests your knowledge, and helps you become interview-ready.
                     </p>
                     <div class="hero-actions">
-                        <a class="btn btn-pulse" href="{{ url_for('resume_analyzer') }}">Analyze My Resume</a>
-                        <a class="btn btn-outline" href="{{ url_for('interview_arena') }}">Test My Skills</a>
+                        <a class="btn btn-pulse" href="{{ url_for('resume_analyzer') }}">Analyze My Resume →</a>
+                        <a class="btn btn-outline" href="{{ url_for('readiness') }}">Check My Readiness →</a>
                     </div>
-                    <div class="hero-stats">
-                        <div>
-                            <strong>01</strong>
-                            <span>Analyze My Resume</span>
-                        </div>
-                        <div>
-                            <strong>02</strong>
-                            <span>Check My Readiness</span>
-                        </div>
-                        <div>
-                            <strong>03</strong>
-                            <span>Start AI Exam</span>
-                        </div>
-                    </div>
-                    <p class="hero-desc">You don't find your internship here. You become ready for it here.</p>
+                    <p class="hero-desc hero-tag">You don't find your internship here. You become ready for it here.</p>
                 </div>
 
-                <div class="hero-visual fade-in delay-1">
-                    <img class="hero-photo"
-                         src="{{ url_for('static', filename='images/hero-students.png') }}"
-                         alt="Students preparing for interviews">
-                    <div class="preview-card float-card">
-                        <p class="preview-label">Readiness Preview</p>
-                        <h3>Interview readiness</h3>
-                        <div class="match-item">
-                            <div>
-                                <h4>Resume strength</h4>
-                                <p>Skills extracted locally</p>
-                            </div>
-                            <span class="match-score">91%</span>
-                        </div>
-                        <div class="match-item">
-                            <div>
-                                <h4>Role readiness</h4>
-                                <p>TF-IDF + neural estimate</p>
-                            </div>
-                            <span class="match-score">78%</span>
-                        </div>
-                        <div class="match-item">
-                            <div>
-                                <h4>Last exam</h4>
-                                <p>Practice before companies</p>
-                            </div>
-                            <span class="match-score">84%</span>
-                        </div>
-                    </div>
+                <div class="hero-visual reveal">
+                    <figure class="scene-art hero-scene">
+                        <img class="hero-photo" src="{{ url_for('static', filename='images/hero.png') }}" alt="Futuristic AI career preparation hologram">
+                        <span class="scan-line"></span>
+                    </figure>
+                    <div class="float-chip chip-a">Resume analysis</div>
+                    <div class="float-chip chip-b">Role readiness</div>
+                    <div class="float-chip chip-c">Skill gaps</div>
                 </div>
             </div>
         </section>
 
-        <section class="ratings" aria-label="App ratings">
+        <div class="section-fade" aria-hidden="true"></div>
+
+        <section class="ratings" aria-label="Demo testimonials">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-eyebrow">What students think</p>
+                    <h2>Sample feedback from the academic demo</h2>
+                    <p class="demo-label">Demo testimonials — not real customer reviews.</p>
+                </div>
+            </div>
             <div class="ratings-track">
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
@@ -125,46 +99,6 @@
                     <p>Simple, clean, and useful for practicing before real interviews.</p>
                     <span>Meera · Computer Science</span>
                 </article>
-                <article class="rating-card">
-                    <p class="stars">★★★★★</p>
-                    <p class="rating-score">5.0</p>
-                    <p>Role readiness made my skill gaps obvious, without promising a job.</p>
-                    <span>Rohan · Final Year</span>
-                </article>
-                <article class="rating-card">
-                    <p class="stars">★★★★☆</p>
-                    <p class="rating-score">4.7</p>
-                    <p>The 14-day plan gave me something concrete to study each day.</p>
-                    <span>Ananya · BCA</span>
-                </article>
-                <article class="rating-card">
-                    <p class="stars">★★★★★</p>
-                    <p class="rating-score">4.9</p>
-                    <p>Loved how easy it was to create a profile and start an exam.</p>
-                    <span>Ishaan · Student</span>
-                </article>
-                <article class="rating-card">
-                    <p class="stars">★★★★★</p>
-                    <p class="rating-score">4.8</p>
-                    <p>Resume analysis extracted skills I had actually written down.</p>
-                    <span>Diya · BCA Student</span>
-                </article>
-            </div>
-        </section>
-
-        <section class="need" id="need">
-            <div class="container need-grid">
-                <div class="need-copy fade-in">
-                    <p class="section-eyebrow">The Need</p>
-                    <h2>Students apply unprepared and repeat the same interview mistakes.</h2>
-                    <p>
-                        InternMatch AI helps you practice first: resume analysis, skill gaps,
-                        exams, and mistake review. You still apply on the company's own website.
-                    </p>
-                </div>
-                <img class="need-photo fade-in delay-1"
-                     src="{{ url_for('static', filename='images/need-search.png') }}"
-                     alt="Student searching through many internship listings">
             </div>
         </section>
 
@@ -172,28 +106,61 @@
             <div class="container">
                 <div class="section-header">
                     <p class="section-eyebrow">Why InternMatch AI</p>
-                    <h2>Built to make you interview-ready</h2>
+                    <h2>Everything You Need To Become Interview Ready</h2>
                     <p>Practice here. Apply on real company platforms.</p>
                 </div>
-                <div class="feature-grid">
-                    <article class="feature-card">
-                        <img src="{{ url_for('static', filename='images/skill-match.png') }}" alt="Skills analysis on a laptop">
-                        <div class="icon">🎯</div>
+                <div class="feature-bento stagger">
+                    <a class="feature-card feature-card-lg reveal" href="{{ url_for('resume_analyzer') }}">
+                        <div>
+                            <span class="feat-num">01</span>
+                            <h3>Resume Analysis</h3>
+                            <p>Scan your resume and extract skills that are actually written there.</p>
+                            <span class="btn btn-small">Analyze My Resume →</span>
+                        </div>
+                        <img src="{{ url_for('static', filename='images/resume-analysis.png') }}" alt="" loading="lazy">
+                    </a>
+                    <a class="feature-card reveal" href="{{ url_for('skill_gap') }}">
+                        <img src="{{ url_for('static', filename='images/skill-analysis.png') }}" alt="" loading="lazy">
+                        <span class="feat-num">02</span>
+                        <h3>Skill Gap</h3>
+                        <p>See what your target role needs that your profile does not have yet.</p>
+                    </a>
+                    <a class="feature-card reveal" href="{{ url_for('readiness') }}">
+                        <img src="{{ url_for('static', filename='images/role-readiness.png') }}" alt="" loading="lazy">
+                        <span class="feat-num">03</span>
                         <h3>Role Readiness</h3>
-                        <p>See how well your skills match a target role using TF-IDF and a local neural score.</p>
-                    </article>
-                    <article class="feature-card">
-                        <img src="{{ url_for('static', filename='images/need-search.png') }}" alt="Student reviewing practice results">
-                        <div class="icon">⚡</div>
-                        <h3>Mistake Analysis</h3>
-                        <p>Find weak topics after each exam and retry until you improve.</p>
-                    </article>
-                    <article class="feature-card">
-                        <img src="{{ url_for('static', filename='images/internship-office.png') }}" alt="Student preparing for interviews">
-                        <div class="icon">🎓</div>
+                        <p>TF-IDF and local neural matching against a career role, not a job board.</p>
+                    </a>
+                    <a class="feature-card reveal" href="{{ url_for('career_roadmap') }}">
+                        <img src="{{ url_for('static', filename='images/career-roadmap.png') }}" alt="" loading="lazy">
+                        <span class="feat-num">04</span>
+                        <h3>Career Roadmap</h3>
+                        <p>A step path from foundation skills to interview practice.</p>
+                    </a>
+                    <a class="feature-card reveal" href="{{ url_for('interview_arena') }}">
+                        <img src="{{ url_for('static', filename='images/ai-examiner.png') }}" alt="" loading="lazy">
+                        <span class="feat-num">05</span>
                         <h3>AI Examiner</h3>
-                        <p>Take role-based exams and mock interviews before the real one.</p>
-                    </article>
+                        <p>Role-based exams with mistake review before a real interview.</p>
+                    </a>
+                    <a class="feature-card reveal" href="{{ url_for('video_interview') }}">
+                        <img src="{{ url_for('static', filename='images/communication-coach.png') }}" alt="" loading="lazy">
+                        <span class="feat-num">06</span>
+                        <h3>Communication Coach</h3>
+                        <p>Practice speaking answers in a local video-style round with live speech cues.</p>
+                    </a>
+                    <a class="feature-card reveal" href="{{ url_for('interview_questions') }}">
+                        <img src="{{ url_for('static', filename='images/interview-questions.png') }}" alt="" loading="lazy">
+                        <span class="feat-num">07</span>
+                        <h3>Interview Questions</h3>
+                        <p>Generate a question bank from your target role or a job description.</p>
+                    </a>
+                    <a class="feature-card reveal" href="{{ url_for('resume_interview') }}">
+                        <img src="{{ url_for('static', filename='images/viva-simulator.png') }}" alt="" loading="lazy">
+                        <span class="feat-num">08</span>
+                        <h3>Viva Simulator</h3>
+                        <p>Defend your projects and resume claims in an oral, viva-style interview round.</p>
+                    </a>
                 </div>
             </div>
         </section>
@@ -205,41 +172,38 @@
                     <h2>Local tools for smarter preparation</h2>
                     <p>Log in to analyze your resume, check readiness, take exams, and track progress.</p>
                 </div>
-                <div class="feature-grid tools-grid">
+                <div class="feature-grid tools-grid stagger">
                     <a class="ai-tool-card" href="{{ url_for('resume_analyzer') }}">
-                        <div class="icon">📄</div>
                         <h3>Analyze My Resume</h3>
                         <p>Extract skills and weak areas from your resume.</p>
                     </a>
                     <a class="ai-tool-card" href="{{ url_for('resume_fixer') }}">
-                        <div class="icon">✏️</div>
                         <h3>Fix Your Resume</h3>
                         <p>Rewrite your resume for your target role and download a PDF.</p>
                     </a>
                     <a class="ai-tool-card" href="{{ url_for('readiness') }}">
-                        <div class="icon">🎯</div>
                         <h3>Check My Readiness</h3>
                         <p>See role readiness for your target career.</p>
                     </a>
                     <a class="ai-tool-card" href="{{ url_for('interview_arena') }}">
-                        <div class="icon">📝</div>
                         <h3>Start AI Exam</h3>
                         <p>Test knowledge and review mistakes.</p>
                     </a>
                     <a class="ai-tool-card" href="{{ url_for('video_interview') }}">
-                        <div class="icon">📹</div>
                         <h3>Mock Interview</h3>
                         <p>Practice answers in a video-style round.</p>
                     </a>
                     <a class="ai-tool-card" href="{{ url_for('skill_gap') }}">
-                        <div class="icon">🧩</div>
                         <h3>Skill Gap</h3>
                         <p>See what to learn next.</p>
                     </a>
                     <a class="ai-tool-card" href="{{ url_for('preparation_plan') }}">
-                        <div class="icon">🗺️</div>
                         <h3>Preparation Plan</h3>
                         <p>Get a 14-day plan from your gaps.</p>
+                    </a>
+                    <a class="ai-tool-card" href="{{ url_for('ats_simulator') }}">
+                        <h3>ATS Simulator</h3>
+                        <p>Educational keyword coverage check — not a real company ATS.</p>
                     </a>
                 </div>
             </div>
@@ -274,9 +238,9 @@
 
         <section class="about" id="about">
             <div class="container about-box">
-                <img class="about-photo"
-                     src="{{ url_for('static', filename='images/internship-office.png') }}"
-                     alt="Student starting an internship in a modern office">
+                <figure class="scene-art">
+                    <img class="about-photo" src="{{ url_for('static', filename='images/progress.png') }}" alt="AI progress hologram" loading="lazy">
+                </figure>
                 <div>
                     <p class="section-eyebrow">About the Project</p>
                     <h2>Your AI-powered interview coach</h2>
@@ -285,15 +249,27 @@
                         internship applications. Use it to prepare, then apply on official company sites.
                     </p>
                 </div>
-                <a class="btn btn-pulse" href="{{ url_for('register') }}">Get Started</a>
+                <a class="btn btn-pulse" href="{{ url_for('register') }}">Get Started →</a>
             </div>
         </section>
     </main>
 
     <footer class="footer">
-        <div class="container footer-inner">
-            <p><strong>InternMatch AI</strong> — Make mistakes here. Crack interviews there.</p>
-            <p class="footer-note">Built as a BCA final-year project · Running locally</p>
+        <div class="container footer-grid">
+            <div>
+                <p class="logo">InternMatch <span>AI</span></p>
+                <p>Make mistakes here. Crack interviews there.</p>
+            </div>
+            <div>
+                <p class="preview-label">Navigate</p>
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+            </div>
+            <div>
+                <p class="preview-label">Academic project notice</p>
+                <p class="footer-note">InternMatch AI is an academic preparation platform. Applications happen on actual company platforms.</p>
+            </div>
         </div>
     </footer>
 </body>

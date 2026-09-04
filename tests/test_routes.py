@@ -9,6 +9,10 @@ STUDENT_PAGES = (
     "/resume-analyzer",
     "/resume-fixer",
     "/profile",
+    "/job-analyzer",
+    "/ats-simulator",
+    "/resume-interview",
+    "/interview-questions",
 )
 
 

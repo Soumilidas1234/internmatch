@@ -11,12 +11,15 @@
 
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">AI Tool</p>
                     <h1>Project Recommendations</h1>
                     <p class="auth-subtitle">Build these projects to strengthen your {{ selected }} portfolio before interviews.</p>
                 </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/project-analyzer.png') }}" alt="Project and laptop hologram">
+                </figure>
             </section>
 
             <section class="auth-card">
@@ -37,9 +40,10 @@
                     <p><strong>{{ project.domain }}</strong> · {{ project.level }}</p>
                     <p>Skills: {{ project.skills | join(', ') }}</p>
                     <p>{{ project.why }}</p>
-                    <p class="match-note">Match score: {{ project.match_score }}%
-                        {% if project.overlap %} · You have {{ project.overlap | join(', ') }}{% endif %}
-                    </p>
+                    <p class="match-note">Match score: {{ project.match_score }}%{% if project.overlap %} · You have {{ project.overlap | join(', ') }}{% endif %}</p>
+                    <div class="skill-meter">
+                        <div class="bar"><i data-width="{{ project.match_score }}"></i></div>
+                    </div>
                 </article>
                 {% endfor %}
             </section>

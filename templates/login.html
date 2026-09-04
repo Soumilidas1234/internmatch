@@ -10,7 +10,7 @@
     {% include "partials/navbar.html" %}
 
     <main class="auth-page">
-        <div class="container">
+        <div class="container split-visual">
             <section class="auth-card auth-card-narrow">
                 <p class="badge">Welcome Back</p>
                 <h1>Student Login</h1>
@@ -39,6 +39,9 @@
                 <p class="auth-switch">New student? <a href="{{ url_for('register') }}">Create an account</a></p>
                 <p class="auth-switch">Administrator? <a href="{{ url_for('admin.login') }}">Admin login</a></p>
             </section>
+            <figure class="scene-art ai-idle">
+                <img src="{{ url_for('static', filename='images/hero.png') }}" alt="InternMatch AI hologram">
+            </figure>
         </div>
     </main>
 </body>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Simulator | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page jd-page">
+        <div class="container">
+            <section class="split-visual reveal">
+                <div>
+                    <p class="badge">AI-Powered ATS-Style Simulation</p>
+                    <h1>AI ATS Resume Simulator</h1>
+                    <p class="auth-subtitle">See how well your resume is prepared for your target role.</p>
+                    <p class="auth-subtitle">This score is an educational simulation and does not represent the result of any real company's ATS.</p>
+                    <p class="auth-subtitle">AI-powered ATS-style simulation — actual ATS behavior may vary.</p>
+                </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/ats-simulator.png') }}" alt="Resume passing through an AI scanner">
+                    <span class="scan-line"></span>
+                </figure>
+            </section>
+
+            <section class="jd-card jd-glow">
+                <form method="POST" action="{{ url_for('ats_simulator') }}" enctype="multipart/form-data">
+                    <h2>Resume</h2>
+                    {% if resume_text %}
+                    <p>Existing resume text is saved ({{ resume_text.split()|length }} words). You can reuse it or replace it below.</p>
+                    {% else %}
+                    <p>No saved resume yet. Paste text or upload a file, or use <a href="{{ url_for('resume_analyzer') }}">Resume Analysis</a>.</p>
+                    {% endif %}
+                    <label for="resume_file">Replace resume (optional .txt / .pdf)</label>
+                    <input type="file" id="resume_file" name="resume_file" accept=".txt,.pdf">
+                    <label for="resume_text">Or paste resume text (optional)</label>
+                    <textarea id="resume_text" name="resume_text" rows="4" placeholder="Only needed if you do not already have a saved resume."></textarea>
+
+                    <h2>Target role</h2>
+                    <label for="target_role">Select a role</label>
+                    <select id="target_role" name="target_role">
+                        {% for role in roles %}
+                        <option value="{{ role }}" {% if selected_role == role %}selected{% endif %}>{{ role }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="custom_role">Or type a custom role</label>
+                    <input type="text" id="custom_role" name="custom_role" placeholder="Optional custom role">
+
+                    <h2>Paste Job Description (Optional)</h2>
+                    {% if latest_jd %}
+                    <p>Your latest Job Description Analyzer result was pre-filled. Edit it if needed.</p>
+                    {% endif %}
+                    <textarea id="job_description" name="job_description" rows="8" placeholder="Paste a job description to compare against that posting. Leave empty to use the target role.">{{ pasted_jd or '' }}</textarea>
+                    <div class="ats-flow" aria-hidden="true">
+                        <span>Resume</span>
+                        <span>AI Scan</span>
+                        <span>Keyword match</span>
+                        <span>ATS-style score</span>
+                    </div>
+                    <div class="ai-loader"><span class="loader-orb"></span> AI is scanning your resume...</div>
+                    <button class="btn btn-pulse" type="submit">Run ATS Simulation</button>
+                </form>
+            </section>
+
+            {% if result %}
+            <section class="jd-card ats-score-card">
+                <p class="badge">ATS simulation score</p>
+                <div class="score-ring ats-ring" data-score="{{ result.ats_score }}"><span>{{ result.ats_score }}%</span></div>
+                <p>{{ result.ats_score }} / 100</p>
+                <p class="auth-subtitle">Not a real company ATS result. It does not predict whether you will be selected.</p>
+            </section>
+
+            <section class="intern-grid">
+                <article class="intern-card jd-card">
+                    <h3>Keyword coverage</h3>
+                    <p class="big-score">{{ result.keyword_score }}%</p>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Role relevance</h3>
+                    <p class="big-score">{{ result.role_relevance_score }}%</p>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Skills coverage</h3>
+                    <p class="big-score">{{ result.skills_score }}%</p>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Resume structure</h3>
+                    <p class="big-score">{{ result.structure_score }}%</p>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Content completeness</h3>
+                    <p class="big-score">{{ result.completeness_score }}%</p>
+                </article>
+            </section>
+
+            <section class="intern-grid">
+                <article class="intern-card jd-card">
+                    <h3>Matching keywords</h3>
+                    {% for item in result.matching_keywords %}
+                    <p class="skill-ok">✓ {{ item }}</p>
+                    {% else %}<p>Not detected</p>{% endfor %}
+                    <h3>Missing important keywords</h3>
+                    {% for item in result.missing_keywords %}
+                    <p class="skill-missing">⚠ {{ item }}</p>
+                    {% else %}<p>Not detected</p>{% endfor %}
+                    <p class="auth-subtitle">Only add a keyword to your resume when you genuinely have that skill or experience.</p>
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Resume structure</h3>
+                    {% for item in result.structure %}
+                    <p>
+                        {% if item.ok %}✓{% else %}⚠{% endif %}
+                        {{ item.label }}
+                        {% if item.optional and not item.ok %}(optional for many student resumes){% endif %}
+                    </p>
+                    {% endfor %}
+                </article>
+            </section>
+
+            <section class="jd-card">
+                <h2>Target role relevance</h2>
+                <p><strong>{{ result.target_role }}</strong></p>
+                <p>Role relevance: {{ result.role_relevance_score }}%</p>
+                <p>{{ result.relevance_why }}</p>
+                {% if result.used_job_description %}
+                <p>Compared against the pasted job description.</p>
+                {% else %}
+                <p>Compared against the selected target role skill list.</p>
+                {% endif %}
+            </section>
+
+            <section class="jd-card">
+                <h2>ATS warnings</h2>
+                {% if result.warnings %}
+                <ul>
+                    {% for item in result.warnings %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No extra warnings from the extracted text.</p>
+                {% endif %}
+            </section>
+
+            <section class="jd-card">
+                <h2>Recommended improvements</h2>
+                <ol>
+                    {% for item in result.suggestions %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ol>
+            </section>
+
+            <section class="intern-grid">
+                <article class="intern-card jd-card">
+                    <h3>Improve your resume — current</h3>
+                    {% for item in result.current_issues %}
+                    <p>⚠ {{ item }}</p>
+                    {% endfor %}
+                </article>
+                <article class="intern-card jd-card">
+                    <h3>Improve your resume — improve</h3>
+                    {% for item in result.improve %}
+                    <p>{{ item }}</p>
+                    {% endfor %}
+                    <p class="auth-subtitle">This does not rewrite your resume or invent experience.</p>
+                </article>
+            </section>
+
+            <section class="jd-card">
+                <h2>How this score is calculated</h2>
+                <ul>
+                    {% for label, weight in result.weights %}
+                    <li>{{ label }}: {{ weight }}%</li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            {% if history %}
+            <section class="jd-card">
+                <h2>Recent simulations</h2>
+                <div class="intern-grid">
+                    {% for item in history %}
+                    <article class="intern-card">
+                        <h3>{{ item.target_role }}</h3>
+                        <p>{{ item.ats_score }} / 100</p>
+                        <p>{{ item.created_at.strftime('%d %b %Y') if item.created_at else '' }}</p>
+                        <a class="btn btn-small" href="{{ url_for('ats_simulator_detail', simulation_id=item.id) }}">Open</a>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

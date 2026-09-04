@@ -4,7 +4,7 @@
 
 InternMatch AI is a local Flask web application for **internship and interview preparation**. It is **not** an internship-finding or application website. Students do not browse listings, search internships, or apply through this app.
 
-The platform analyzes a resume, estimates role readiness, finds skill gaps, rebuilds a target-role resume as PDF, runs an AI examiner, reviews mistakes, and tracks progress. Matching uses TF-IDF, cosine similarity, skill overlap, and a local scikit-learn neural score. There are no cloud AI APIs.
+The platform analyzes a resume, estimates role readiness, finds skill gaps, rebuilds a target-role resume as PDF, simulates ATS-style keyword coverage, generates role and resume-grounded interview questions, runs an AI examiner, reviews mistakes, and tracks progress. Matching uses TF-IDF, cosine similarity, skill overlap, and a local scikit-learn neural score. There are no cloud AI APIs. The student UI is a dark navy, glassmorphism frontend with 3D-style illustrations (CSS and lightweight JavaScript, not Three.js).
 
 This is a final-year academic project. **Readiness, exam, and resume scores are practice estimates. They do not guarantee a job or internship.**
 
@@ -28,7 +28,7 @@ Then open **http://127.0.0.1:5000/**
 | Email | `demo.student@internmatch.local` |
 | Password | `Demo@123` |
 
-Use that login to try resume analysis, **Fix Resume** (PDF download), role readiness, skill gap, the 14-day plan, the AI examiner, mock interview, and progress.
+Use that login to try resume analysis, **Fix Resume** (PDF download), role readiness, skill gap, career roadmap, the 14-day plan, Job Description Analyzer, ATS Simulator, Resume Interview, Interview Questions, the AI examiner, mock interview, and progress.
 
 The public demo is at **https://internmatch.pythonanywhere.com**. The admin password is not on the website. Set it as `ADMIN_PASSWORD` in `.env` on PythonAnywhere.
 
@@ -158,14 +158,16 @@ Students often apply unprepared and repeat the same interview mistakes. InternMa
 8. AI examiner
 9. Mistake analysis and retry
 10. **Fix Resume** — what to add, what to drop, keywords, score, rebuilt PDF
-11. Interview readiness score
-12. Apply on the **company’s own website** (not here)
+11. Job Description Analyzer and ATS-style simulation
+12. Resume Interview and role Interview Questions
+13. Interview readiness score
+14. Apply on the **company’s own website** (not here)
 
 ---
 
 ## Student navigation
 
-Dashboard · My Profile · Resume Analysis · **Fix Resume** · Skill Gap · Preparation Plan · AI Examiner · Mock Interview · My Progress · Logout
+Dashboard · Profile · Resume · Skill Gap · Roadmap · AI Exam · Interview (Interview Questions, Resume Interview, Mock Interview) · More (Role Readiness, Fix Resume, Job Analyzer, ATS Simulator, Preparation Plan, My Progress) · Logout
 
 There is no Internships, Find Internship, or Applications menu.
 
@@ -185,9 +187,15 @@ There is no Internships, Find Internship, or Applications menu.
 - Skill-gap analysis: what you know, what you are missing, HIGH / MEDIUM / LOW priority
 - 14-day preparation plan from gaps and recent exam mistakes
 - AI examiner with keyword scoring, topic scores, mistake review, and retake
+- Career roadmap from foundation skills to interview practice
+- Job Description Analyzer: paste a posting, see required skills vs your profile
+- ATS Simulator: educational keyword-coverage score (not a real company ATS)
+- Resume Interview: questions grounded only in the student’s stored resume
+- Interview Questions: role / JD question bank with practice and saved items
 - Mock (video-style) interview
 - Progress history of exam attempts
-- Dashboard with profile strength and readiness breakdown
+- Dashboard with profile strength, readiness ring, AI insight, and next action from real data
+- Premium navy / electric-blue UI: glass cards, 3D illustrations, score rings, feature sounds (mute in the navbar)
 
 Old internship listing, detail, apply, and application **URLs still exist but redirect** to preparation pages. Internship tables are kept in SQLite and are not dropped.
 
@@ -245,11 +253,19 @@ internmatch/
 │   ├── roles.py                # Target role skill catalogs
 │   ├── prep.py                 # Gaps, 14-day plan, mistakes, readiness composite
 │   ├── resume_fixer.py         # Add/remove/keywords + rebuilt resume PDF
-│   └── profile_strength.py     # Profile completeness
+│   ├── profile_strength.py     # Profile completeness
+│   ├── jd_analyzer.py          # Job description vs student profile
+│   ├── ats_simulator.py        # ATS-style keyword simulation
+│   ├── resume_interview.py     # Resume-grounded interview questions
+│   └── role_questions.py       # Target-role / JD interview question bank
 ├── tests/
 ├── models/
 │   └── __init__.py             # User, ExamAttempt; Internship/Application kept unused in UI
 ├── static/
+│   ├── css/style.css           # Base layout
+│   ├── css/visual.css          # Navy / glass / 3D visual layer
+│   ├── js/visual.js            # Particles, tilt, score rings, feature sounds
+│   └── images/                 # Consistent 3D-style illustrations
 └── templates/
 ```
 
@@ -377,9 +393,12 @@ Admin login is at `/admin/login`. The email defaults to `admin@internmatch.local
 6. Open **Check My Readiness** (`/readiness`) for the Student ↔ Target Role score.
 7. Open **Skill Gap** to see HIGH / MEDIUM / LOW missing skills.
 8. Open **Preparation Plan** for a 14-day plan.
-9. Open **AI Examiner**, finish an exam, and review mistakes. Retake to see improvement.
-10. Open **Mock Interview** for a video-style practice round.
-11. Open **My Progress** to see score history.
+9. Open **Career Roadmap** for a step path based on your profile.
+10. Open **Job Analyzer** and optionally **ATS Simulator** (educational simulation — actual ATS behavior may vary).
+11. Open **Interview Questions** for a role/JD bank, or **Resume Interview** to defend claims on your resume.
+12. Open **AI Examiner**, finish an exam, and review mistakes. Retake to see improvement.
+13. Open **Mock Interview** for a video-style practice round.
+14. Open **My Progress** to see score history.
 
 Internship browse / apply URLs redirect. Apply on official company sites after you practice.
 
@@ -436,6 +455,12 @@ Function names such as `score_internship()` remain in `ml/matcher.py` so older t
 
 `id`, `user_id`, `target_role`, `overall_score`, `topic_scores`, `mistakes`, `created_at`
 
+### Preparation extras (added with the interview tools)
+
+- `ResumeInterviewSession` — resume-grounded practice session
+- `RoleQuestionSet` / `SavedRoleQuestion` — generated role question banks and saved items
+- Job-description and ATS simulation records used by those pages
+
 ### Internship and Application (kept, not shown)
 
 These tables remain so existing code and SQLite files are not destroyed. The student UI does not list internships or process applications.
@@ -464,7 +489,7 @@ These tables remain so existing code and SQLite files are not destroyed. The stu
 .\venv\Scripts\python.exe -m pytest
 ```
 
-Tests cover skill matching, the neural scorer, role readiness, login, skill gap, the examiner, internship URL redirects, and Fix Resume / PDF.
+Tests cover skill matching, the neural scorer, role readiness, login, skill gap, the examiner, internship URL redirects, Fix Resume / PDF, ATS simulator, Job Description Analyzer, Resume Interview, and Interview Questions.
 
 ---
 
@@ -477,7 +502,7 @@ Tests cover skill matching, the neural scorer, role readiness, login, skill gap,
 | Fix Resume says there is no resume | Analyze or paste a resume first on **Resume Analysis**. |
 | Readiness looks empty | Log in as the demo student, or add skills on the profile / resume analyzer. |
 | Port 5000 is already in use | Close the other program using that port, then run `app.py` again. |
-| Homepage 500 after an update | Restart `app.py` so Flask loads the new routes. |
+| Homepage 500 after an update | Restart `app.py` so Flask loads the new routes. Close extra `app.py` terminals so only one process owns port 5000. |
 | `SECRET_KEY is missing` | Copy `.env.example` to `.env` and set `SECRET_KEY`. |
 | Admin login fails | Use the password from your `.env` `ADMIN_PASSWORD`. |
 

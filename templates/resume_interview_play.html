@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Interview Practice | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page jd-page ri-page">
+        <div class="container">
+            <section class="split-visual reveal">
+                <div>
+                    <p class="badge">QUESTION {{ question_number }} / {{ total_questions }}</p>
+                    <h1>Resume interview practice</h1>
+                    <p class="auth-subtitle">{{ category_label }} · {{ difficulty }} · grounded in your resume</p>
+                    <form method="POST" action="{{ url_for('resume_interview_play') }}">
+                        <input type="hidden" name="action" value="quit">
+                        <button class="btn btn-outline btn-small" type="submit">End session</button>
+                    </form>
+                </div>
+                <figure class="scene-art ai-idle">
+                    <img src="{{ url_for('static', filename='images/resume-interview.png') }}" alt="Holographic interview panel">
+                </figure>
+            </section>
+
+            <div class="progress-track">
+                <div class="progress-fill" style="width: {{ progress }}%;"></div>
+            </div>
+
+            <section class="jd-card jd-glow ri-question-card">
+                <p class="preview-label">{{ category_label }}</p>
+                <h2>{{ question.question }}</h2>
+                {% if question.source %}
+                <p class="ri-source">From your resume: {{ question.source }}</p>
+                {% endif %}
+
+                {% if not feedback %}
+                <form method="POST" action="{{ url_for('resume_interview_play') }}">
+                    <label for="answer"><strong>Your answer</strong></label>
+                    <textarea id="answer" name="answer" rows="7" placeholder="Type your answer here..."></textarea>
+                    <div class="ri-actions">
+                        <button class="btn" type="submit" name="action" value="submit">Submit Answer</button>
+                        <button class="btn btn-outline" type="submit" name="action" value="skip">Skip</button>
+                    </div>
+                </form>
+                {% else %}
+                <article class="ri-feedback">
+                    <p class="badge">ANSWER FEEDBACK</p>
+                    <p>Relevance: <strong>{{ feedback.relevance }}</strong></p>
+                    <p>Technical Depth: <strong>{{ feedback.technical_depth }}</strong></p>
+                    <p>Completeness: <strong>{{ feedback.completeness }}</strong></p>
+                    {% if feedback.skipped %}
+                    <p class="auth-subtitle">You skipped this question. Practice it again later using your resume example.</p>
+                    {% endif %}
+                    <h3>What You Did Well</h3>
+                    <ul>
+                        {% for item in feedback.well %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                    <h3>What You Could Add</h3>
+                    <ul>
+                        {% for item in feedback.add %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                    <h3>Points You Should Be Ready To Explain</h3>
+                    <ul>
+                        {% for item in feedback.ready %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% if feedback.followup_queued %}
+                    <p class="ri-followup">Follow-up queued next: {{ feedback.followup_queued }}</p>
+                    {% endif %}
+                </article>
+                <form method="POST" action="{{ url_for('resume_interview_play') }}">
+                    <button class="btn" type="submit" name="action" value="next">Next Question</button>
+                </form>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+</body>
+</html>

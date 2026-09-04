@@ -1896,6 +1896,220 @@ button.btn {
     color: #0f766e;
 }
 
+.jd-page .jd-card {
+    margin-bottom: 22px;
+    padding: 24px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(12, 36, 58, 0.72), rgba(6, 40, 34, 0.88));
+    border: 1px solid rgba(125, 211, 252, 0.18);
+    box-shadow: 0 18px 40px rgba(2, 8, 23, 0.35);
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.jd-page .jd-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 48px rgba(56, 189, 248, 0.12);
+}
+
+.jd-glow {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.12), 0 18px 40px rgba(2, 8, 23, 0.35);
+}
+
+.jd-page textarea {
+    width: 100%;
+    margin: 10px 0 16px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(110, 231, 183, 0.2);
+    background: rgba(4, 22, 19, 0.7);
+    color: #e7f8f3;
+    font: inherit;
+    resize: vertical;
+}
+
+.jd-score-card .big-score {
+    font-size: 56px;
+    color: #6ee7b7;
+}
+
+.jd-priority {
+    margin: 12px 0;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(4, 22, 19, 0.45);
+    border: 1px solid rgba(110, 231, 183, 0.12);
+}
+
+.jd-page ul {
+    margin: 8px 0 14px 18px;
+    color: #9dcbbd;
+}
+
+.ats-score-card {
+    text-align: center;
+}
+
+.ats-ring {
+    --pct: 0;
+    width: 160px;
+    height: 160px;
+    margin: 12px auto 16px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(circle at center, rgba(4, 22, 19, 0.95) 58%, transparent 59%),
+        conic-gradient(#67e8f9 calc(var(--pct) * 1%), rgba(15, 39, 68, 0.9) 0);
+    box-shadow: 0 0 28px rgba(99, 102, 241, 0.18);
+}
+
+.ats-ring strong {
+    font-size: 42px;
+    line-height: 1;
+    color: #6ee7b7;
+}
+
+.ats-ring span {
+    display: block;
+    color: #9dcbbd;
+    font-size: 14px;
+}
+
+.jd-page select,
+.jd-page input[type="text"],
+.jd-page input[type="file"] {
+    display: block;
+    width: 100%;
+    margin: 8px 0 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(110, 231, 183, 0.2);
+    background: rgba(4, 22, 19, 0.7);
+    color: #e7f8f3;
+}
+
+.jd-page ol {
+    margin: 8px 0 14px 22px;
+    color: #9dcbbd;
+}
+
+.ri-hotspot-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.ri-hotspot {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: linear-gradient(160deg, rgba(67, 56, 202, 0.18), rgba(6, 40, 34, 0.88));
+    border: 1px solid rgba(167, 139, 250, 0.28);
+    box-shadow: 0 12px 28px rgba(2, 8, 23, 0.28), 0 0 18px rgba(99, 102, 241, 0.12);
+}
+
+.ri-hotspot h3 {
+    color: #c4b5fd;
+    margin-bottom: 6px;
+}
+
+.ri-choice-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 8px 0 16px;
+}
+
+.ri-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(4, 22, 19, 0.65);
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    cursor: pointer;
+}
+
+.ri-question-card h2 {
+    margin: 10px 0 14px;
+    color: #e0f2fe;
+}
+
+.ri-source {
+    color: #7dd3fc;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+}
+
+.ri-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.ri-feedback {
+    margin: 12px 0 18px;
+    padding: 18px;
+    border-radius: 18px;
+    background: rgba(4, 22, 19, 0.55);
+    border: 1px solid rgba(110, 231, 183, 0.16);
+}
+
+.ri-followup {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(67, 56, 202, 0.2);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.ri-alert {
+    border-color: rgba(250, 204, 21, 0.35);
+    box-shadow: 0 0 24px rgba(250, 204, 21, 0.08);
+}
+
+.ri-empty h2 {
+    margin-bottom: 10px;
+}
+
+.iq-question {
+    margin: 16px 0;
+    padding: 18px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.65), rgba(6, 40, 34, 0.9));
+    border: 1px solid rgba(96, 165, 250, 0.22);
+    box-shadow: 0 12px 28px rgba(2, 8, 23, 0.28);
+}
+
+.iq-question h3 {
+    color: #dbeafe;
+    margin: 8px 0 10px;
+}
+
+.iq-score h2 {
+    color: #7dd3fc;
+}
+
+.iq-page select,
+.iq-page input[type="text"] {
+    width: 100%;
+    margin: 8px 0 16px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    background: rgba(4, 22, 19, 0.7);
+    color: #e7f8f3;
+    font: inherit;
+}
+
+@media (max-width: 800px) {
+    .ri-hotspot-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 900px) {
     .admin-shell {
         grid-template-columns: 1fr;

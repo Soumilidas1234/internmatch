@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Questions | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page jd-page iq-page">
+        <div class="container">
+            <section class="split-visual reveal">
+                <div>
+                    <p class="badge">AI Interview Question Generator</p>
+                    <h1>Practice what your target role is likely to demand</h1>
+                    <p class="auth-subtitle">Don't practice random questions. This bank is built from your target role and, optionally, a pasted job description — not from your resume and not the AI Examiner.</p>
+                </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/interview-questions.png') }}" alt="Floating interview question cards">
+                </figure>
+            </section>
+
+            {% if not bank %}
+            <section class="jd-card jd-glow">
+                <form method="POST" action="{{ url_for('interview_questions') }}">
+                    <label for="target_role"><strong>Target Role</strong></label>
+                    <select id="target_role" name="target_role">
+                        {% for role in roles %}
+                        <option value="{{ role }}" {% if role == target %}selected{% endif %}>{{ role }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="custom_role"><strong>Or enter a custom target role</strong></label>
+                    <input id="custom_role" type="text" name="custom_role" maxlength="80" placeholder="e.g. Data Scientist">
+                    <label for="job_description"><strong>Paste Job Description</strong> (optional)</label>
+                    <textarea id="job_description" name="job_description" rows="10" placeholder="Paste Job Description">{{ pasted or '' }}</textarea>
+                    <p><strong>Difficulty</strong></p>
+                    <div class="ri-choice-row">
+                        <label class="ri-choice"><input type="radio" name="difficulty" value="beginner"> Beginner</label>
+                        <label class="ri-choice"><input type="radio" name="difficulty" value="intermediate"> Intermediate</label>
+                        <label class="ri-choice"><input type="radio" name="difficulty" value="advanced"> Advanced</label>
+                        <label class="ri-choice"><input type="radio" name="difficulty" value="mixed" checked> Mixed</label>
+                    </div>
+                    <p><strong>Question count</strong></p>
+                    <div class="ri-choice-row">
+                        <label class="ri-choice"><input type="radio" name="count" value="10"> 10 Questions</label>
+                        <label class="ri-choice"><input type="radio" name="count" value="20" checked> 20 Questions</label>
+                        <label class="ri-choice"><input type="radio" name="count" value="30"> 30 Questions</label>
+                    </div>
+                    <div class="ai-loader"><span class="loader-orb"></span> AI is generating interview questions...</div>
+                    <div class="ri-actions">
+                        <button class="btn btn-pulse" type="submit" name="action" value="generate">Generate questions</button>
+                        <button class="btn" type="submit" name="action" value="quick">Quick Practice</button>
+                        <button class="btn btn-outline" type="submit" name="without_jd" value="1">Generate without Job Description</button>
+                        <button class="btn btn-outline" type="submit" name="action" value="weak">Practice Weak Areas</button>
+                    </div>
+                </form>
+            </section>
+            {% if history %}
+            <section class="jd-card">
+                <h3>Recent question banks</h3>
+                <ul>
+                    {% for item in history %}
+                    <li>
+                        <a href="{{ url_for('interview_questions_bank', set_id=item.id) }}">
+                            {{ item.target_role }} · {{ item.question_count }} questions
+                            {% if item.avg_score is not none %}· avg {{ item.avg_score }}%{% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a class="btn btn-small" href="{{ url_for('interview_questions_saved') }}">My Saved Questions</a>
+            </section>
+            {% endif %}
+            {% endif %}
+
+            {% if bank %}
+            <section class="intern-grid">
+                <article class="intern-card jd-card iq-score">
+                    <p>Target Role</p>
+                    <h2>{{ record.target_role }}</h2>
+                </article>
+                <article class="intern-card jd-card iq-score">
+                    <p>JD Match / coverage</p>
+                    <h2>{{ bank.coverage_overall }}%</h2>
+                    <p class="auth-subtitle">Your question bank covers {{ bank.coverage_overall }}% of the important skills detected for this role{% if bank.has_jd %} / job description{% endif %}.</p>
+                </article>
+                <article class="intern-card jd-card iq-score">
+                    <p>Questions</p>
+                    <h2>{{ record.question_count }}</h2>
+                </article>
+            </section>
+
+            {% if bank.coverage %}
+            <section class="jd-card">
+                <h2>JOB QUESTION COVERAGE</h2>
+                {% for skill, pct in bank.coverage.items() %}
+                <p>{{ skill }}</p>
+                <div class="strength-bar"><span style="width: {{ pct }}%;"></span></div>
+                <p class="auth-subtitle">{{ pct }}%</p>
+                {% endfor %}
+                {% if bank.coverage_missing %}
+                <p><strong>Topics needing more preparation:</strong> {{ bank.coverage_missing | join(', ') }}</p>
+                {% endif %}
+            </section>
+            {% endif %}
+
+            {% if performance and performance.scores %}
+            <section class="jd-card">
+                <h2>QUESTION PERFORMANCE</h2>
+                {% for topic, score in performance.scores.items() %}
+                <p>{{ topic }}: {{ score }}%</p>
+                <div class="strength-bar"><span style="width: {{ score }}%;"></span></div>
+                {% endfor %}
+                {% if performance.weakest %}
+                <p>Your weakest interview area is <strong>{{ performance.weakest }}</strong>.</p>
+                <p class="auth-subtitle">Practice {{ performance.weakest }} questions before attempting advanced interview questions.</p>
+                <form method="POST" action="{{ url_for('interview_questions') }}">
+                    <input type="hidden" name="target_role" value="{{ record.target_role }}">
+                    <input type="hidden" name="difficulty" value="{{ record.difficulty or 'mixed' }}">
+                    <button class="btn" type="submit" name="action" value="weak">Practice Weak Areas</button>
+                </form>
+                {% endif %}
+            </section>
+            {% endif %}
+
+            <div class="header-actions">
+                <a class="btn btn-pulse" href="{{ url_for('interview_questions_practice', set_id=record.id) }}">Start Preparation</a>
+                <a class="btn" href="{{ url_for('interview_questions') }}">New bank</a>
+                <a class="btn btn-outline" href="{{ url_for('interview_questions_saved') }}">My Saved Questions</a>
+            </div>
+
+            {% for level in ['HIGH', 'MEDIUM', 'LOW'] %}
+            {% set items = bank.questions | selectattr('priority', 'equalto', level) | list %}
+            {% if items %}
+            <section class="jd-card iq-group">
+                <p class="badge">{{ level }} PRIORITY</p>
+                {% for item in items %}
+                <article class="iq-question">
+                    <p class="preview-label">{{ item.topic }} · Question {{ '%02d'|format(item.qid + 1) }} · {{ categories.get(item.category, item.category) }}</p>
+                    <h3>{{ item.question }}</h3>
+                    <p><strong>{{ item.difficulty|title }}</strong> · {{ item.priority }} PRIORITY</p>
+                    <p class="auth-subtitle"><strong>Why this question?</strong> {{ item.why }}</p>
+                    <div class="ri-actions">
+                        <a class="btn btn-small" href="{{ url_for('interview_questions_practice', set_id=record.id, start=item.qid) }}">Practice Question</a>
+                        {% if item.question not in saved_texts %}
+                        <form method="POST" action="{{ url_for('interview_questions_save', set_id=record.id) }}">
+                            <input type="hidden" name="index" value="{{ item.qid }}">
+                            <button class="btn btn-small btn-outline" type="submit">Save Question</button>
+                        </form>
+                        {% else %}
+                        <span class="auth-subtitle">Saved</span>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
+            {% endfor %}
+            <p class="auth-subtitle">{{ bank.disclaimer }}</p>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

@@ -10,12 +10,15 @@
     {% include "partials/navbar.html" %}
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">Student Profile</p>
                     <h1>Complete your profile</h1>
                     <p class="auth-subtitle">Keep your details current so role readiness stays accurate. This platform prepares you; it does not process job applications.</p>
                 </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/project-analyzer.png') }}" alt="Profile hologram">
+                </figure>
             </section>
             <section class="auth-card">
                 <form method="POST" action="{{ url_for('profile') }}">

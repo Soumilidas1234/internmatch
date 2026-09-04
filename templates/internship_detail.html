@@ -11,12 +11,12 @@
 
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">{{ domain }}</p>
                     <h1>{{ internship.title }}</h1>
                     <p class="auth-subtitle">{{ internship.company }} · Realistic sample listing for this academic project.</p>
-                </div>
+                    <div class="header-actions">
                 {% if already_applied %}
                     <span class="btn btn-disabled">Already Applied</span>
                 {% elif session.get('user_id') %}
@@ -26,6 +26,11 @@
                 {% else %}
                     <a class="btn btn-pulse" href="{{ url_for('login') }}">Login to apply</a>
                 {% endif %}
+                    </div>
+                </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/project-analyzer.png') }}" alt="Role hologram">
+                </figure>
             </section>
 
             <section class="profile-grid">

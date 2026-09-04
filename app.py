@@ -28,10 +28,37 @@ from ml.prep import (
     user_target_role,
 )
 from ml.profile_strength import compute_profile_strength
+from ml.ats_simulator import simulate_ats
+from ml.jd_analyzer import analyze_job_description, validate_job_description
 from ml.recommender import student_has_skills
 from ml.resume_fixer import build_resume_fix, render_resume_pdf, stored_resume_text
+from ml.resume_interview import (
+    CATEGORY_LABELS,
+    build_hotspots,
+    build_report,
+    evaluate_resume_answer,
+    extract_resume_claims,
+    generate_questions,
+)
+from ml.role_questions import (
+    CATEGORY_LABELS as ROLE_Q_CATEGORIES,
+    evaluate_role_answer,
+    generate_role_questions,
+    resolve_generator_role,
+    summarize_user_practice,
+    topic_performance,
+)
 from ml.roles import ROLE_NAMES, get_role_spec
-from models import ExamAttempt, User, db
+from models import (
+    AtsSimulation,
+    ExamAttempt,
+    JobAnalysis,
+    ResumeInterviewSession,
+    RoleQuestionSet,
+    SavedRoleQuestion,
+    User,
+    db,
+)
 from seed import ensure_admin_user, ensure_demo_student, ensure_prep_schema, ensure_sample_internships
 from tools import (
     DOMAINS,
@@ -124,6 +151,7 @@ def inject_nav_user():
         "demo_student_email": DEMO_STUDENT_EMAIL,
         "demo_student_password": DEMO_STUDENT_PASSWORD,
         "show_demo_login": bool(DEMO_STUDENT_PASSWORD),
+        "nav_endpoints": set(app.view_functions),
     }
 
 
@@ -331,6 +359,9 @@ def dashboard():
     readiness = interview_readiness(profile["score"], match or {}, last_exam)
     mistakes = last_exam.mistake_list() if last_exam else []
     plan = build_preparation_plan(student["skills"], target, attempts)
+    role_q_stats = summarize_user_practice(
+        RoleQuestionSet.query.filter_by(user_id=user.id).all()
+    )
 
     return render_template(
         "dashboard.html",
@@ -347,6 +378,7 @@ def dashboard():
         mistakes=mistakes[:4],
         plan=plan,
         attempts=attempts[:5],
+        role_q_stats=role_q_stats,
     )
 
 
@@ -414,6 +446,804 @@ def skill_gap():
         missing=missing,
         priority=priority,
         need_skills=need_skills,
+    )
+
+
+@app.route("/job-analyzer", methods=["GET", "POST"])
+@login_required
+def job_analyzer():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    result = None
+    pasted = ""
+    if request.method == "POST":
+        pasted = request.form.get("job_description", "")
+        cleaned, error = validate_job_description(pasted)
+        if error:
+            flash(error, "error")
+        else:
+            try:
+                student = student_match_payload(user)
+                resume_text = stored_resume_text(user) or ""
+                result = analyze_job_description(student, cleaned, resume_text)
+                analysis = JobAnalysis(
+                    user_id=user.id,
+                    job_title=result["job_title"] if result["job_title"] != "Not detected" else "Untitled role",
+                    job_description=cleaned,
+                    detected_skills=json.dumps(result["required_skills"] if isinstance(result["required_skills"], list) else []),
+                    matching_skills=json.dumps(result["have"]),
+                    missing_skills=json.dumps(result["missing"]),
+                    match_score=result["score"],
+                    result_json=json.dumps(result),
+                )
+                db.session.add(analysis)
+                db.session.commit()
+                return redirect(url_for("job_analyzer_detail", analysis_id=analysis.id))
+            except Exception:
+                db.session.rollback()
+                flash("We could not analyze that description. Please try again with a clearer job post.", "error")
+
+    history = (
+        JobAnalysis.query.filter_by(user_id=user.id)
+        .order_by(JobAnalysis.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    return render_template(
+        "job_analyzer.html",
+        user=user,
+        result=result,
+        pasted=pasted,
+        history=history,
+        analysis=None,
+    )
+
+
+@app.route("/job-analyzer/<int:analysis_id>")
+@login_required
+def job_analyzer_detail(analysis_id):
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    analysis = db.session.get(JobAnalysis, analysis_id)
+    if analysis is None or analysis.user_id != user.id:
+        flash("That analysis was not found.", "error")
+        return redirect(url_for("job_analyzer"))
+
+    result = analysis.result()
+    history = (
+        JobAnalysis.query.filter_by(user_id=user.id)
+        .order_by(JobAnalysis.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    return render_template(
+        "job_analyzer.html",
+        user=user,
+        result=result,
+        pasted=analysis.job_description,
+        history=history,
+        analysis=analysis,
+    )
+
+
+@app.route("/ats-simulator", methods=["GET", "POST"])
+@login_required
+def ats_simulator():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    resume_text = stored_resume_text(user)
+    latest_jd = (
+        JobAnalysis.query.filter_by(user_id=user.id)
+        .order_by(JobAnalysis.created_at.desc())
+        .first()
+    )
+    pasted_jd = (latest_jd.job_description if latest_jd else "") or ""
+    selected_role = user_target_role(user)
+
+    if request.method == "POST":
+        selected_role = (
+            request.form.get("custom_role", "").strip()
+            or request.form.get("target_role", "").strip()
+            or selected_role
+        )
+        pasted_jd = request.form.get("job_description", "")
+        file_storage = request.files.get("resume_file")
+        pasted_resume = request.form.get("resume_text", "")
+        upload_text = ""
+        if (file_storage and file_storage.filename) or (pasted_resume or "").strip():
+            try:
+                upload_text = extract_resume_text(file_storage, pasted_resume)
+            except ValueError as error:
+                flash(str(error), "error")
+        if upload_text:
+            resume_text = upload_text
+            user.last_resume_text = upload_text
+            db.session.commit()
+        if not resume_text:
+            flash("Upload or paste a resume first, or analyze one on Resume Analysis.", "error")
+        else:
+            try:
+                if selected_role:
+                    user.target_role = selected_role
+                    user.preferred_domain = selected_role
+                    db.session.commit()
+                student = student_match_payload(user)
+                result = simulate_ats(student, resume_text, selected_role, pasted_jd)
+                record = AtsSimulation(
+                    user_id=user.id,
+                    target_role=result["target_role"],
+                    job_description=(pasted_jd or "").strip() or None,
+                    ats_score=result["ats_score"],
+                    keyword_score=result["keyword_score"],
+                    role_relevance_score=result["role_relevance_score"],
+                    structure_score=result["structure_score"],
+                    result_json=json.dumps(result),
+                )
+                db.session.add(record)
+                db.session.commit()
+                return redirect(url_for("ats_simulator_detail", simulation_id=record.id))
+            except Exception:
+                db.session.rollback()
+                flash("The simulation could not run. Try a clearer resume or job description.", "error")
+
+    history = (
+        AtsSimulation.query.filter_by(user_id=user.id)
+        .order_by(AtsSimulation.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    return render_template(
+        "ats_simulator.html",
+        user=user,
+        result=None,
+        resume_text=resume_text,
+        pasted_jd=pasted_jd,
+        selected_role=selected_role,
+        roles=ROLE_NAMES,
+        history=history,
+        simulation=None,
+        latest_jd=latest_jd,
+    )
+
+
+@app.route("/ats-simulator/<int:simulation_id>")
+@login_required
+def ats_simulator_detail(simulation_id):
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    simulation = db.session.get(AtsSimulation, simulation_id)
+    if simulation is None or simulation.user_id != user.id:
+        flash("That simulation was not found.", "error")
+        return redirect(url_for("ats_simulator"))
+
+    history = (
+        AtsSimulation.query.filter_by(user_id=user.id)
+        .order_by(AtsSimulation.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    resume_text = stored_resume_text(user)
+    return render_template(
+        "ats_simulator.html",
+        user=user,
+        result=simulation.result(),
+        resume_text=resume_text,
+        pasted_jd=simulation.job_description or "",
+        selected_role=simulation.target_role or user_target_role(user),
+        roles=ROLE_NAMES,
+        history=history,
+        simulation=simulation,
+        latest_jd=None,
+    )
+
+
+RESUME_INTERVIEW_KEY = "resume_interview_id"
+
+
+def _resume_interview_record(user):
+    session_id = session.get(RESUME_INTERVIEW_KEY)
+    if not session_id:
+        return None
+    record = db.session.get(ResumeInterviewSession, session_id)
+    if record is None or record.user_id != user.id:
+        session.pop(RESUME_INTERVIEW_KEY, None)
+        return None
+    payload = record.result()
+    if payload.get("status") != "in_progress":
+        session.pop(RESUME_INTERVIEW_KEY, None)
+        return None
+    return record
+
+
+def _save_resume_interview_payload(record, payload):
+    record.result_json = json.dumps(payload)
+    record.question_count = len(payload.get("answers") or [])
+    db.session.commit()
+
+
+def _renumber_resume_questions(questions):
+    total = len(questions)
+    for index, item in enumerate(questions, start=1):
+        item["index"] = index
+        item["total"] = total
+    return questions
+
+
+def _finish_resume_interview(user, record, payload):
+    questions = payload.get("questions") or []
+    answers = payload.get("answers") or []
+    claims = {"skills": payload.get("claims_skills") or []}
+    payload["report"] = build_report(questions, answers, claims)
+    payload["status"] = "complete"
+    payload["feedback"] = None
+    record.question_count = len(answers)
+    record.difficulty = payload.get("difficulty") or record.difficulty
+    _save_resume_interview_payload(record, payload)
+    session.pop(RESUME_INTERVIEW_KEY, None)
+    return record
+
+
+@app.route("/resume-interview", methods=["GET", "POST"])
+@login_required
+def resume_interview():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    resume_text = stored_resume_text(user)
+    claims = extract_resume_claims(user, resume_text) if resume_text else None
+    target = user_target_role(user)
+    hotspots = build_hotspots(claims, target) if claims else []
+
+    if request.method == "POST":
+        if not resume_text:
+            flash("Upload your resume first to generate personalized interview questions.", "error")
+            return redirect(url_for("resume_interview"))
+        difficulty = (request.form.get("difficulty") or "mixed").strip().lower()
+        if difficulty not in ("beginner", "intermediate", "advanced", "mixed"):
+            difficulty = "mixed"
+        try:
+            count = int(request.form.get("count") or 10)
+        except (TypeError, ValueError):
+            count = 10
+        if count not in (5, 10, 15):
+            count = 10
+        try:
+            questions = generate_questions(claims, target, difficulty, count)
+        except Exception:
+            questions = []
+        if not questions:
+            flash(
+                "Could not build resume-based questions yet. Add projects and skills on Resume Analysis, then try again.",
+                "error",
+            )
+            return redirect(url_for("resume_interview"))
+        payload = {
+            "status": "in_progress",
+            "difficulty": difficulty,
+            "count": count,
+            "questions": questions,
+            "index": 0,
+            "answers": [],
+            "feedback": None,
+            "followups_added": 0,
+            "claims_skills": claims.get("skills") or [],
+            "hotspots": hotspots,
+            "target_role": target,
+        }
+        record = ResumeInterviewSession(
+            user_id=user.id,
+            difficulty=difficulty,
+            question_count=0,
+            result_json=json.dumps(payload),
+        )
+        db.session.add(record)
+        db.session.commit()
+        session[RESUME_INTERVIEW_KEY] = record.id
+        return redirect(url_for("resume_interview_play"))
+
+    history = []
+    for item in (
+        ResumeInterviewSession.query.filter_by(user_id=user.id)
+        .order_by(ResumeInterviewSession.created_at.desc())
+        .limit(12)
+        .all()
+    ):
+        if item.result().get("status") == "complete":
+            history.append(item)
+        if len(history) >= 6:
+            break
+    return render_template(
+        "resume_interview.html",
+        user=user,
+        has_resume=bool(resume_text),
+        hotspots=hotspots,
+        target=target,
+        history=history,
+        active_session=bool(_resume_interview_record(user)),
+    )
+
+
+@app.route("/resume-interview/play", methods=["GET", "POST"])
+@login_required
+def resume_interview_play():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    record = _resume_interview_record(user)
+    if not record:
+        flash("Start a resume interview from your own resume first.", "error")
+        return redirect(url_for("resume_interview"))
+
+    payload = record.result()
+    questions = payload.get("questions") or []
+    index = int(payload.get("index") or 0)
+
+    if request.method == "POST":
+        action = (request.form.get("action") or "").strip().lower()
+        try:
+            if action == "submit":
+                if index >= len(questions):
+                    finished = _finish_resume_interview(user, record, payload)
+                    return redirect(url_for("resume_interview_report", session_id=finished.id))
+                if payload.get("feedback"):
+                    flash("Review the feedback, then continue to the next question.", "error")
+                else:
+                    raw = request.form.get("answer", "")
+                    answer = (raw or "").strip()[:4000]
+                    current = questions[index]
+                    feedback = evaluate_resume_answer(current, answer)
+                    followup = feedback.get("followup")
+                    if followup and int(payload.get("followups_added") or 0) < 3:
+                        questions.insert(index + 1, followup)
+                        _renumber_resume_questions(questions)
+                        payload["questions"] = questions
+                        payload["followups_added"] = int(payload.get("followups_added") or 0) + 1
+                        feedback["followup_queued"] = followup.get("question")
+                    else:
+                        feedback["followup_queued"] = None
+                    payload["feedback"] = feedback
+                    _save_resume_interview_payload(record, payload)
+            elif action == "skip":
+                if payload.get("feedback"):
+                    flash("Use Next Question to continue.", "error")
+                elif index < len(questions):
+                    current = questions[index]
+                    skipped = evaluate_resume_answer(current, "")
+                    skipped["skipped"] = True
+                    skipped["answer"] = ""
+                    answers = list(payload.get("answers") or [])
+                    answers.append(skipped)
+                    payload["answers"] = answers
+                    payload["feedback"] = None
+                    payload["index"] = index + 1
+                    _save_resume_interview_payload(record, payload)
+                    index = payload["index"]
+                    if index >= len(questions):
+                        finished = _finish_resume_interview(user, record, payload)
+                        return redirect(url_for("resume_interview_report", session_id=finished.id))
+            elif action == "next":
+                feedback = payload.get("feedback")
+                if not feedback:
+                    flash("Submit or skip this question first.", "error")
+                else:
+                    answers = list(payload.get("answers") or [])
+                    answers.append(feedback)
+                    payload["answers"] = answers
+                    payload["feedback"] = None
+                    payload["index"] = index + 1
+                    _save_resume_interview_payload(record, payload)
+                    index = payload["index"]
+                    if index >= len(questions):
+                        finished = _finish_resume_interview(user, record, payload)
+                        return redirect(url_for("resume_interview_report", session_id=finished.id))
+            elif action == "quit":
+                payload["status"] = "abandoned"
+                _save_resume_interview_payload(record, payload)
+                session.pop(RESUME_INTERVIEW_KEY, None)
+                flash("Resume interview ended. You can start again anytime.", "success")
+                return redirect(url_for("resume_interview"))
+        except Exception:
+            session.pop(RESUME_INTERVIEW_KEY, None)
+            flash("The interview session could not continue. Please start again.", "error")
+            return redirect(url_for("resume_interview"))
+
+        record = _resume_interview_record(user)
+        if not record:
+            return redirect(url_for("resume_interview"))
+        payload = record.result()
+        questions = payload.get("questions") or []
+        index = int(payload.get("index") or 0)
+
+    if index >= len(questions):
+        finished = _finish_resume_interview(user, record, payload)
+        return redirect(url_for("resume_interview_report", session_id=finished.id))
+
+    current = questions[index]
+    total = len(questions)
+    progress = int((index / total) * 100) if total else 0
+    feedback = payload.get("feedback")
+    if feedback:
+        progress = int(((index + 1) / total) * 100) if total else 0
+
+    return render_template(
+        "resume_interview_play.html",
+        user=user,
+        question=current,
+        question_number=index + 1,
+        total_questions=total,
+        progress=progress,
+        feedback=feedback,
+        category_label=CATEGORY_LABELS.get(current.get("category"), "Question"),
+        difficulty=(current.get("difficulty") or payload.get("difficulty") or "mixed").title(),
+    )
+
+
+@app.route("/resume-interview/<int:session_id>")
+@login_required
+def resume_interview_report(session_id):
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    record = db.session.get(ResumeInterviewSession, session_id)
+    if record is None or record.user_id != user.id:
+        flash("That resume interview was not found.", "error")
+        return redirect(url_for("resume_interview"))
+
+    result = record.result()
+    if result.get("status") == "in_progress":
+        session[RESUME_INTERVIEW_KEY] = record.id
+        return redirect(url_for("resume_interview_play"))
+    if result.get("status") != "complete":
+        flash("That resume interview was not found.", "error")
+        return redirect(url_for("resume_interview"))
+
+    return render_template(
+        "resume_interview_report.html",
+        user=user,
+        record=record,
+        result=result,
+        report=result.get("report") or {},
+        answers=result.get("answers") or [],
+    )
+
+
+def _role_question_set_for(user, set_id):
+    record = db.session.get(RoleQuestionSet, set_id)
+    if record is None or record.user_id != user.id:
+        return None
+    return record
+
+
+def _save_role_question_payload(record, payload):
+    answers = [item for item in (payload.get("answers") or []) if not item.get("skipped")]
+    scores = [int(item.get("score") or 0) for item in answers]
+    record.avg_score = int(round(sum(scores) / len(scores))) if scores else None
+    record.question_count = len(payload.get("questions") or [])
+    record.result_json = json.dumps(payload)
+    db.session.commit()
+
+
+def _create_role_question_set(user, generated, difficulty, jd_text=""):
+    payload = dict(generated)
+    payload["jd_text"] = (jd_text or "")[:20000]
+    payload["index"] = 0
+    payload["answers"] = []
+    payload["feedback"] = None
+    payload["followups_added"] = 0
+    payload["difficulty"] = difficulty
+    record = RoleQuestionSet(
+        user_id=user.id,
+        target_role=generated.get("role") or "",
+        difficulty=difficulty,
+        question_count=len(generated.get("questions") or []),
+        result_json=json.dumps(payload),
+    )
+    db.session.add(record)
+    db.session.commit()
+    return record
+
+
+@app.route("/interview-questions", methods=["GET", "POST"])
+@login_required
+def interview_questions():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    student = student_match_payload(user)
+    target = user_target_role(user)
+    latest_jd = (
+        JobAnalysis.query.filter_by(user_id=user.id)
+        .order_by(JobAnalysis.created_at.desc())
+        .first()
+    )
+    pasted = (latest_jd.job_description if latest_jd else "") or ""
+
+    if request.method == "POST":
+        action = (request.form.get("action") or "generate").strip().lower()
+        custom = request.form.get("custom_role", "").strip()
+        chosen = custom or request.form.get("target_role", "").strip() or target
+        if not chosen:
+            flash("Choose a target role or provide a job description to generate relevant interview questions.", "error")
+            return redirect(url_for("interview_questions"))
+        pasted = request.form.get("job_description", "")
+        use_jd = bool(pasted.strip()) and action != "skip_jd"
+        if request.form.get("without_jd"):
+            use_jd = False
+            pasted = ""
+        if use_jd:
+            cleaned, error = validate_job_description(pasted)
+            if error:
+                flash(error, "error")
+                return redirect(url_for("interview_questions"))
+            pasted = cleaned
+        else:
+            pasted = ""
+        difficulty = (request.form.get("difficulty") or "mixed").strip().lower()
+        if difficulty not in ("beginner", "intermediate", "advanced", "mixed"):
+            difficulty = "mixed"
+        try:
+            count = int(request.form.get("count") or 20)
+        except (TypeError, ValueError):
+            count = 20
+        if count not in (10, 20, 30):
+            count = 20
+        quick = action == "quick"
+        weak_topics = None
+        exclude = []
+        if action == "weak":
+            stats = summarize_user_practice(RoleQuestionSet.query.filter_by(user_id=user.id).all())
+            weak_topics = [stats["weakest"]] if stats.get("weakest") else None
+            if not weak_topics:
+                flash("Practice a few questions first so weak areas can be detected.", "error")
+                return redirect(url_for("interview_questions"))
+            for item in RoleQuestionSet.query.filter_by(user_id=user.id).all():
+                for question in item.result().get("questions") or []:
+                    exclude.append(question.get("question") or "")
+        try:
+            if chosen:
+                user.target_role = resolve_generator_role(chosen)
+                user.preferred_domain = user.target_role
+                db.session.commit()
+            generated = generate_role_questions(
+                chosen,
+                student_skills=student["skills"],
+                jd_text=pasted,
+                student=student if pasted else None,
+                resume_text=stored_resume_text(user),
+                difficulty=difficulty,
+                count=5 if quick else count,
+                exclude_questions=exclude,
+                weak_topics=weak_topics,
+                quick=quick,
+            )
+        except Exception:
+            db.session.rollback()
+            flash("Questions could not be generated. Try a clearer role or job description.", "error")
+            return redirect(url_for("interview_questions"))
+        if not generated.get("questions"):
+            flash("No supported skills were found for that role or description. Add a target role or a fuller job description.", "error")
+            return redirect(url_for("interview_questions"))
+        record = _create_role_question_set(user, generated, difficulty, pasted)
+        return redirect(url_for("interview_questions_bank", set_id=record.id))
+
+    history = (
+        RoleQuestionSet.query.filter_by(user_id=user.id)
+        .order_by(RoleQuestionSet.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    stats = summarize_user_practice(history)
+    saved = (
+        SavedRoleQuestion.query.filter_by(user_id=user.id)
+        .order_by(SavedRoleQuestion.created_at.desc())
+        .limit(8)
+        .all()
+    )
+    return render_template(
+        "interview_questions.html",
+        user=user,
+        target=target,
+        roles=ROLE_NAMES,
+        pasted=pasted,
+        history=history,
+        stats=stats,
+        saved=saved,
+        bank=None,
+        record=None,
+    )
+
+
+@app.route("/interview-questions/saved")
+@login_required
+def interview_questions_saved():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    saved = (
+        SavedRoleQuestion.query.filter_by(user_id=user.id)
+        .order_by(SavedRoleQuestion.created_at.desc())
+        .all()
+    )
+    return render_template("interview_questions_saved.html", user=user, saved=saved)
+
+
+@app.route("/interview-questions/<int:set_id>")
+@login_required
+def interview_questions_bank(set_id):
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    record = _role_question_set_for(user, set_id)
+    if record is None:
+        flash("That question set was not found.", "error")
+        return redirect(url_for("interview_questions"))
+    payload = record.result()
+    performance = topic_performance(payload.get("answers"))
+    saved_texts = {
+        item.question
+        for item in SavedRoleQuestion.query.filter_by(user_id=user.id).all()
+    }
+    return render_template(
+        "interview_questions.html",
+        user=user,
+        target=record.target_role,
+        roles=ROLE_NAMES,
+        pasted=payload.get("jd_text") or "",
+        history=[],
+        stats=summarize_user_practice([record]),
+        saved=[],
+        bank=payload,
+        record=record,
+        performance=performance,
+        saved_texts=saved_texts,
+        categories=ROLE_Q_CATEGORIES,
+    )
+
+
+@app.route("/interview-questions/<int:set_id>/save", methods=["POST"])
+@login_required
+def interview_questions_save(set_id):
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    record = _role_question_set_for(user, set_id)
+    if record is None:
+        flash("That question set was not found.", "error")
+        return redirect(url_for("interview_questions"))
+    try:
+        index = int(request.form.get("index") or 0)
+    except (TypeError, ValueError):
+        index = 0
+    questions = record.result().get("questions") or []
+    if index < 0 or index >= len(questions):
+        flash("That question could not be saved.", "error")
+        return redirect(url_for("interview_questions_bank", set_id=set_id))
+    item = questions[index]
+    exists = SavedRoleQuestion.query.filter_by(user_id=user.id, question=item["question"]).first()
+    if exists:
+        flash("That question is already in My Saved Questions.", "success")
+        return redirect(url_for("interview_questions_bank", set_id=set_id))
+    db.session.add(
+        SavedRoleQuestion(
+            user_id=user.id,
+            set_id=record.id,
+            question=item["question"],
+            topic=item.get("topic"),
+            category=item.get("category"),
+            difficulty=item.get("difficulty"),
+            priority=item.get("priority"),
+            explanation=item.get("why"),
+        )
+    )
+    db.session.commit()
+    flash("Question saved.", "success")
+    return redirect(url_for("interview_questions_bank", set_id=set_id))
+
+
+@app.route("/interview-questions/<int:set_id>/practice", methods=["GET", "POST"])
+@login_required
+def interview_questions_practice(set_id):
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    record = _role_question_set_for(user, set_id)
+    if record is None:
+        flash("That question set was not found.", "error")
+        return redirect(url_for("interview_questions"))
+
+    payload = record.result()
+    questions = payload.get("questions") or []
+    if request.method == "GET" and request.args.get("start"):
+        try:
+            payload["index"] = max(0, min(int(request.args.get("start")), len(questions) - 1))
+        except (TypeError, ValueError):
+            payload["index"] = 0
+        payload["feedback"] = None
+        _save_role_question_payload(record, payload)
+
+    index = int(payload.get("index") or 0)
+
+    if request.method == "POST":
+        action = (request.form.get("action") or "").strip().lower()
+        try:
+            if action == "submit":
+                if index >= len(questions):
+                    return redirect(url_for("interview_questions_bank", set_id=record.id))
+                if payload.get("feedback"):
+                    flash("Review the feedback, then continue.", "error")
+                else:
+                    answer = (request.form.get("answer") or "").strip()[:4000]
+                    current = questions[index]
+                    feedback = evaluate_role_answer(current, answer)
+                    followup = feedback.get("followup")
+                    if followup and int(payload.get("followups_added") or 0) < 3:
+                        questions.insert(index + 1, followup)
+                        payload["questions"] = questions
+                        payload["followups_added"] = int(payload.get("followups_added") or 0) + 1
+                        feedback["followup_queued"] = followup.get("question")
+                    payload["feedback"] = feedback
+                    _save_role_question_payload(record, payload)
+            elif action == "skip":
+                if payload.get("feedback"):
+                    flash("Use Next Question to continue.", "error")
+                elif index < len(questions):
+                    skipped = evaluate_role_answer(questions[index], "")
+                    skipped["skipped"] = True
+                    answers = list(payload.get("answers") or [])
+                    answers.append(skipped)
+                    payload["answers"] = answers
+                    payload["feedback"] = None
+                    payload["index"] = index + 1
+                    _save_role_question_payload(record, payload)
+                    index = payload["index"]
+            elif action == "next":
+                feedback = payload.get("feedback")
+                if not feedback:
+                    flash("Submit or skip this question first.", "error")
+                else:
+                    answers = list(payload.get("answers") or [])
+                    answers.append(feedback)
+                    payload["answers"] = answers
+                    payload["feedback"] = None
+                    payload["index"] = index + 1
+                    _save_role_question_payload(record, payload)
+                    index = payload["index"]
+        except Exception:
+            flash("That practice step could not be saved. Please try again.", "error")
+            return redirect(url_for("interview_questions_practice", set_id=set_id))
+        payload = record.result()
+        questions = payload.get("questions") or []
+        index = int(payload.get("index") or 0)
+
+    if index >= len(questions):
+        flash("Preparation round complete. Review coverage and weak areas below.", "success")
+        return redirect(url_for("interview_questions_bank", set_id=record.id))
+
+    current = questions[index]
+    total = len(questions)
+    progress = int(((index + (1 if payload.get("feedback") else 0)) / total) * 100) if total else 0
+    return render_template(
+        "interview_questions_practice.html",
+        user=user,
+        record=record,
+        question=current,
+        question_number=index + 1,
+        total_questions=total,
+        progress=progress,
+        feedback=payload.get("feedback"),
+        category_label=ROLE_Q_CATEGORIES.get(current.get("category"), "Question"),
     )
 
 
@@ -583,7 +1413,15 @@ def progress():
         .order_by(ExamAttempt.created_at.asc())
         .all()
     )
-    return render_template("progress.html", user=user, attempts=attempts)
+    role_q_stats = summarize_user_practice(
+        RoleQuestionSet.query.filter_by(user_id=user.id).all()
+    )
+    return render_template(
+        "progress.html",
+        user=user,
+        attempts=attempts,
+        role_q_stats=role_q_stats,
+    )
 
 
 @app.route("/scam-detector", methods=["GET", "POST"])

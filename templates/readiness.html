@@ -10,12 +10,15 @@
     {% include "partials/navbar.html" %}
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">Perfect Match</p>
                     <h1>Career / role readiness</h1>
                     <p class="auth-subtitle">How well does your current profile match your target role? This is an estimate, not a hiring guarantee.</p>
                 </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/role-readiness.png') }}" alt="Readiness ring hologram">
+                </figure>
             </section>
 
             <section class="auth-card">
@@ -47,8 +50,8 @@
                 <div class="strength-meter">
                     <p class="preview-label">Target role</p>
                     <h2>{{ target }}</h2>
+                    <div class="score-ring" data-score="{{ match.readiness }}"><span>{{ match.readiness }}%</span></div>
                     <div class="strength-score">
-                        <strong>{{ match.readiness }}%</strong>
                         <span>Role readiness · {{ match.label }}</span>
                     </div>
                     <div class="strength-bar"><span style="width: {{ match.readiness }}%;"></span></div>

@@ -10,12 +10,15 @@
     {% include "partials/navbar.html" %}
     <main class="dashboard-page">
         <div class="container">
-            <section class="dashboard-header">
+            <section class="split-visual reveal">
                 <div>
                     <p class="badge">Personalized Plan</p>
                     <h1>Your 14-day plan for {{ plan.role }}</h1>
                     <p class="auth-subtitle">Generated from your skills, gaps, and recent exam mistakes. Practice here, then apply on company sites.</p>
                 </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/preparation-plan.png') }}" alt="Preparation timeline">
+                </figure>
             </section>
             <section class="result-grid">
                 {% for step in plan.plan %}

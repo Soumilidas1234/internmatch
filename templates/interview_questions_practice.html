@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Interview Question | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page jd-page iq-page">
+        <div class="container">
+            <section class="split-visual reveal">
+                <div>
+                    <p class="badge">QUESTION {{ question_number }} / {{ total_questions }}</p>
+                    <h1>Interview preparation</h1>
+                    <p class="auth-subtitle">{{ category_label }} · {{ question.topic }} · {{ question.difficulty|title }} · {{ question.priority }} priority</p>
+                    <a class="btn btn-outline btn-small" href="{{ url_for('interview_questions_bank', set_id=record.id) }}">Back to bank</a>
+                </div>
+                <figure class="scene-art ai-idle">
+                    <img src="{{ url_for('static', filename='images/interview-questions.png') }}" alt="Floating interview question cards">
+                </figure>
+            </section>
+            <div class="progress-track">
+                <div class="progress-fill" style="width: {{ progress }}%;"></div>
+            </div>
+            <section class="jd-card jd-glow ri-question-card">
+                <p class="preview-label">{{ question.topic }}</p>
+                <h2>{{ question.question }}</h2>
+                <p class="auth-subtitle"><strong>Why it matters:</strong> {{ question.why }}</p>
+                {% if question.expected %}
+                <p><strong>Expected answer points</strong></p>
+                <ul>
+                    {% for point in question.expected %}
+                    <li>✓ {{ point }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% if not feedback %}
+                <form method="POST">
+                    <label for="answer"><strong>Your answer</strong></label>
+                    <textarea id="answer" name="answer" rows="8" placeholder="Type your answer here..."></textarea>
+                    <div class="ri-actions">
+                        <button class="btn" type="submit" name="action" value="submit">Submit Answer</button>
+                        <button class="btn btn-outline" type="submit" name="action" value="skip">Skip</button>
+                    </div>
+                </form>
+                {% else %}
+                <article class="ri-feedback">
+                    <p class="badge">AI-estimated answer evaluation</p>
+                    <div class="score-ring" data-score="{{ feedback.score }}"><span>{{ feedback.score }}%</span></div>
+                    <p class="auth-subtitle">{{ feedback.score }} / 100</p>
+                    <p>Relevance: <strong>{{ feedback.relevance }}</strong> · Correctness: <strong>{{ feedback.correctness }}</strong></p>
+                    <p>Completeness: <strong>{{ feedback.completeness }}</strong> · Technical: <strong>{{ feedback.technical }}</strong> · Clarity: <strong>{{ feedback.clarity }}</strong></p>
+                    <h3>✓ What you got right</h3>
+                    <ul>{% for item in feedback.right %}<li>{{ item }}</li>{% endfor %}</ul>
+                    <h3>⚠ What is missing</h3>
+                    <ul>{% for item in feedback.missing %}<li>{{ item }}</li>{% endfor %}</ul>
+                    <h3>💡 How to improve</h3>
+                    <ul>{% for item in feedback.improve %}<li>{{ item }}</li>{% endfor %}</ul>
+                    {% if feedback.followup_queued %}
+                    <p class="ri-followup">Follow-up queued next: {{ feedback.followup_queued }}</p>
+                    {% endif %}
+                    <p class="auth-subtitle">{{ feedback.disclaimer }}</p>
+                </article>
+                <form method="POST">
+                    <button class="btn" type="submit" name="action" value="next">Next Question</button>
+                </form>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+</body>
+</html>
