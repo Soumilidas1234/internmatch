@@ -28,39 +28,91 @@ Then open **http://127.0.0.1:5000/**
 
 Use that login to try resume analysis, **Fix Resume** (PDF download), role readiness, skill gap, the 14-day plan, the AI examiner, mock interview, and progress.
 
-The admin password is not on the website. Set it as `ADMIN_PASSWORD` in the local `.env` file, or in the Render dashboard if the site is live.
+The admin password is not on the website. Set it as `ADMIN_PASSWORD` in the local `.env` file, or in a `.env` file on PythonAnywhere if the site is live.
 
 ---
 
-## Go live (public website)
+## Go live for free (PythonAnywhere)
 
-Use **Render** so anyone can open the site. The GitHub repo is already at [https://github.com/Soumilidas1234/internmatch](https://github.com/Soumilidas1234/internmatch).
+Render often asks you to pay or add a card. Use **PythonAnywhere Beginner** instead: **$0 / month, no credit card**.
 
-1. Push the latest code to GitHub (`main` branch).
-2. Open [https://render.com](https://render.com) and sign in with GitHub.
-3. Click **New** → **Web Service** → select the `internmatch` repository.
-4. Settings:
-   - **Runtime:** Python
-   - **Build command:** `pip install -r requirements.txt`
-   - **Start command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120`
-5. Add these environment variables (Environment tab):
+Your public URL will look like:
 
-| Key | Value |
-| --- | --- |
-| `SECRET_KEY` | a long random string (not the example from `.env.example`) |
-| `FLASK_DEBUG` | `0` |
-| `FLASK_ENV` | `production` |
-| `ADMIN_EMAIL` | `admin@internmatch.local` |
-| `ADMIN_PASSWORD` | a private password (do not put this on GitHub) |
-| `DEMO_STUDENT_EMAIL` | `demo.student@internmatch.local` |
-| `DEMO_STUDENT_PASSWORD` | `Demo@123` |
+`https://YOUR_USERNAME.pythonanywhere.com`
 
-6. Click **Deploy**. Wait until the deploy is **Live**.
-7. Open the `onrender.com` URL Render shows. That is the public site.
+### Step 1 — Create a free account
 
-Free Render services **sleep after idle time**. The first visit after sleep can take about a minute. SQLite is stored on the server disk, so **student data can reset** when Render rebuilds the service. The demo student is created again on startup.
+1. Open [https://www.pythonanywhere.com](https://www.pythonanywhere.com)
+2. Click **Pricing & signup**
+3. Choose **Beginner** / **Create a Beginner account** ($0)
+4. Confirm your email
 
-Do not commit `.env` or the database file.
+### Step 2 — Download the project on PythonAnywhere
+
+1. Open the **Consoles** tab
+2. Click **Bash**
+3. Paste:
+
+```bash
+git clone https://github.com/Soumilidas1234/internmatch.git
+cd internmatch
+python3.10 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+nano .env
+```
+
+If `python3.10` is not available, try `python3.12` or `python3.11`.
+
+In `.env` set:
+
+- `SECRET_KEY` = a long random string
+- `ADMIN_PASSWORD` = a private password
+- `FLASK_DEBUG` = `0`
+- `FLASK_ENV` = `production`
+- `DEMO_STUDENT_PASSWORD` = `Demo@123`
+
+Save: **Ctrl+O**, Enter, then **Ctrl+X**.
+
+### Step 3 — Create the web app
+
+1. Open the **Web** tab
+2. Click **Add a new web app**
+3. Click **Next**
+4. Choose **Manual configuration** (not Django)
+5. Pick the same Python version you used for the venv (3.10 or newer)
+6. Click **Next**
+
+### Step 4 — Point it at InternMatch
+
+On the Web tab:
+
+1. **Virtualenv** — enter:
+
+```text
+/home/YOUR_USERNAME/internmatch/venv
+```
+
+2. **WSGI configuration file** — click the file path, delete the sample code, paste the contents of `pythonanywhere_wsgi.py` from the repo, and change `YOUR_USERNAME` to your PythonAnywhere username.
+
+3. Click **Reload** at the top of the Web tab.
+
+4. Open `https://YOUR_USERNAME.pythonanywhere.com`
+
+### Step 5 — Logins
+
+- Student: `demo.student@internmatch.local` / `Demo@123`
+- Admin: `https://YOUR_USERNAME.pythonanywhere.com/admin/login` with your `ADMIN_PASSWORD`
+
+### Free-plan notes
+
+- One website, HTTPS included, no card needed.
+- Log in about once a month and click **Run until 3 months from today** / extend so the site does not expire.
+- SQLite is a file on PythonAnywhere, so data stays unless you delete it.
+- If `pip install` fails with “disk quota”, the free 512 MB limit is full. Delete unused files and try again.
+
+Do not put `.env` or your admin password on GitHub.
 
 ---
 
@@ -158,7 +210,7 @@ Old internship listing, detail, apply, and application **URLs still exist but re
 | Frontend | Jinja2 HTML templates, CSS, JavaScript |
 | Authentication | Flask sessions and Werkzeug password hashing |
 | Tests | pytest |
-| Live hosting | Render + gunicorn |
+| Live hosting | PythonAnywhere (free Beginner plan) |
 
 This project does **not** use MySQL, MongoDB, Firebase, TensorFlow, or external LLM APIs.
 
