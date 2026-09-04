@@ -12,10 +12,11 @@ from functools import wraps
 from io import BytesIO
 
 from flask import Flask, flash, jsonify, redirect, render_template, request, send_file, session, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from admin import admin_bp, ensure_admin_schema
-from config import DATABASE_URI, DB_FOLDER, DEBUG, SECRET_KEY, validate_settings
+from config import DATABASE_URI, DB_FOLDER, DEBUG, IS_PRODUCTION, SECRET_KEY, validate_settings
 from ml.prep import (
     analyze_exam_mistakes,
     build_preparation_plan,
@@ -52,7 +53,13 @@ app.config["SECRET_KEY"] = SECRET_KEY
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
-app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config["TEMPLATES_AUTO_RELOAD"] = not IS_PRODUCTION
+if IS_PRODUCTION:
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+    app.config["PREFERRED_URL_SCHEME"] = "https"
+    app.config["SESSION_COOKIE_SECURE"] = True
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # Connect SQLAlchemy to this Flask app
 db.init_app(app)
@@ -847,4 +854,6 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    app.run(debug=DEBUG, host="127.0.0.1", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))
+    host = "0.0.0.0" if os.environ.get("PORT") or IS_PRODUCTION else "127.0.0.1"
+    app.run(debug=DEBUG, host=host, port=port)

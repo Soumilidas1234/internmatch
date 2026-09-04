@@ -28,9 +28,39 @@ Then open **http://127.0.0.1:5000/**
 
 Use that login to try resume analysis, **Fix Resume** (PDF download), role readiness, skill gap, the 14-day plan, the AI examiner, mock interview, and progress.
 
-There is **no public hosted URL**. Demonstrate the project on the student’s computer.
+The admin password is not on the website. Set it as `ADMIN_PASSWORD` in the local `.env` file, or in the Render dashboard if the site is live.
 
-The admin password is not on the website. Set it as `ADMIN_PASSWORD` in the local `.env` file.
+---
+
+## Go live (public website)
+
+Use **Render** so anyone can open the site. The GitHub repo is already at [https://github.com/Soumilidas1234/internmatch](https://github.com/Soumilidas1234/internmatch).
+
+1. Push the latest code to GitHub (`main` branch).
+2. Open [https://render.com](https://render.com) and sign in with GitHub.
+3. Click **New** → **Web Service** → select the `internmatch` repository.
+4. Settings:
+   - **Runtime:** Python
+   - **Build command:** `pip install -r requirements.txt`
+   - **Start command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120`
+5. Add these environment variables (Environment tab):
+
+| Key | Value |
+| --- | --- |
+| `SECRET_KEY` | a long random string (not the example from `.env.example`) |
+| `FLASK_DEBUG` | `0` |
+| `FLASK_ENV` | `production` |
+| `ADMIN_EMAIL` | `admin@internmatch.local` |
+| `ADMIN_PASSWORD` | a private password (do not put this on GitHub) |
+| `DEMO_STUDENT_EMAIL` | `demo.student@internmatch.local` |
+| `DEMO_STUDENT_PASSWORD` | `Demo@123` |
+
+6. Click **Deploy**. Wait until the deploy is **Live**.
+7. Open the `onrender.com` URL Render shows. That is the public site.
+
+Free Render services **sleep after idle time**. The first visit after sleep can take about a minute. SQLite is stored on the server disk, so **student data can reset** when Render rebuilds the service. The demo student is created again on startup.
+
+Do not commit `.env` or the database file.
 
 ---
 
@@ -128,6 +158,7 @@ Old internship listing, detail, apply, and application **URLs still exist but re
 | Frontend | Jinja2 HTML templates, CSS, JavaScript |
 | Authentication | Flask sessions and Werkzeug password hashing |
 | Tests | pytest |
+| Live hosting | Render + gunicorn |
 
 This project does **not** use MySQL, MongoDB, Firebase, TensorFlow, or external LLM APIs.
 
@@ -145,6 +176,8 @@ internmatch/
 ├── import_internships.py       # Leftover CSV loader (listings are not shown to students)
 ├── .env.example
 ├── requirements.txt
+├── Procfile                  # Render start command
+├── render.yaml               # Optional Render blueprint
 ├── data/
 │   └── internships.csv         # Leftover fictional listings (not shown in the UI)
 ├── database/
