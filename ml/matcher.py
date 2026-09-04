@@ -1,4 +1,10 @@
-"""Build internship match scores with TF-IDF, cosine similarity, and skill overlap."""
+"""Score how well a student profile matches a target role.
+
+Originally this compared Student ↔ Internship. The same TF-IDF, cosine
+similarity, skill overlap, and neural weights are now used for
+Student ↔ Target Role readiness. Names such as score_internship() are kept
+so existing tests still pass; the student UI uses score_role_readiness().
+"""
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity

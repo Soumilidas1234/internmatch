@@ -1,3 +1,10 @@
+"""InternMatch AI: local Flask app for internship and interview preparation.
+
+Students analyze resumes, check role readiness, practice exams, and rebuild a
+resume PDF. Internship browse/apply URLs redirect; applications are not
+processed here.
+"""
+
 import json
 import os
 import re

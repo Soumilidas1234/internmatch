@@ -1,4 +1,8 @@
-"""Create demo accounts and load sample internships when the app starts."""
+"""Create the demo student, admin account, and prep-schema columns on startup.
+
+Sample internship rows may still be inserted into leftover tables. Those
+listings are not shown in the student interface.
+"""
 
 from werkzeug.security import generate_password_hash
 

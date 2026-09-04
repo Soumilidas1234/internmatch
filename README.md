@@ -1,8 +1,12 @@
 # InternMatch AI
 
-InternMatch AI is a local Flask web application that helps students **prepare** for internship and job interviews. It analyzes a resume, estimates role readiness, finds skill gaps, runs an AI examiner, reviews mistakes, and tracks progress. Matching uses TF-IDF, cosine similarity, skill overlap, and a local scikit-learn neural score. There are no cloud AI APIs.
+**Make mistakes here. Crack interviews there.**
 
-This is a final-year academic project. **Readiness and exam scores are practice estimates. They do not guarantee a job or internship.**
+InternMatch AI is a local Flask web application for **internship and interview preparation**. It is **not** an internship-finding or application website. Students do not browse listings, search internships, or apply through this app.
+
+The platform analyzes a resume, estimates role readiness, finds skill gaps, rebuilds a target-role resume as PDF, runs an AI examiner, reviews mistakes, and tracks progress. Matching uses TF-IDF, cosine similarity, skill overlap, and a local scikit-learn neural score. There are no cloud AI APIs.
+
+This is a final-year academic project. **Readiness, exam, and resume scores are practice estimates. They do not guarantee a job or internship.**
 
 **Source code:** [https://github.com/Soumilidas1234/internmatch](https://github.com/Soumilidas1234/internmatch)
 
@@ -22,7 +26,7 @@ Then open **http://127.0.0.1:5000/**
 | Email | `demo.student@internmatch.local` |
 | Password | `Demo@123` |
 
-Use that login to try resume analysis, role readiness, skill gap, the 14-day plan, the AI examiner, mock interview, and progress.
+Use that login to try resume analysis, **Fix Resume** (PDF download), role readiness, skill gap, the 14-day plan, the AI examiner, mock interview, and progress.
 
 There is **no public hosted URL**. Demonstrate the project on the student’s computer.
 
@@ -33,36 +37,51 @@ The admin password is not on the website. Set it as `ADMIN_PASSWORD` in the loca
 ## Table of contents
 
 1. [Purpose](#purpose)
-2. [Features](#features)
-3. [Tech stack](#tech-stack)
-4. [Project structure](#project-structure)
-5. [System architecture](#system-architecture)
-6. [Prerequisites](#prerequisites)
-7. [Step-by-step setup](#step-by-step-setup)
-8. [How to run the application](#how-to-run-the-application)
-9. [Demo and admin accounts](#demo-and-admin-accounts)
-10. [Student walkthrough](#student-walkthrough)
-11. [Admin walkthrough](#admin-walkthrough)
-12. [Matching engine](#matching-engine)
-13. [Database models](#database-models)
-14. [Limitations](#limitations)
-15. [Troubleshooting](#troubleshooting)
+2. [Student navigation](#student-navigation)
+3. [Features](#features)
+4. [Tech stack](#tech-stack)
+5. [Project structure](#project-structure)
+6. [System architecture](#system-architecture)
+7. [Prerequisites](#prerequisites)
+8. [Step-by-step setup](#step-by-step-setup)
+9. [How to run the application](#how-to-run-the-application)
+10. [Demo and admin accounts](#demo-and-admin-accounts)
+11. [Student walkthrough](#student-walkthrough)
+12. [Admin walkthrough](#admin-walkthrough)
+13. [Matching engine](#matching-engine)
+14. [Database models](#database-models)
+15. [Limitations](#limitations)
+16. [Automated tests](#automated-tests)
+17. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Purpose
 
+You don't find your internship here. You become ready for it here.
+
 Students often apply unprepared and repeat the same interview mistakes. InternMatch AI is a practice platform:
 
-1. Analyze the resume
-2. Check readiness for a target role
-3. See skill gaps
-4. Follow a 14-day plan
-5. Take an AI exam
-6. Review mistakes
-7. Retry and track progress
+1. Register and create a profile
+2. Upload a resume
+3. AI resume analysis
+4. Choose a **target role** (not an internship listing)
+5. Role readiness / Perfect Match (student ↔ target role)
+6. Skill-gap analysis
+7. Personalized 14-day preparation plan
+8. AI examiner
+9. Mistake analysis and retry
+10. **Fix Resume** — what to add, what to drop, keywords, score, rebuilt PDF
+11. Interview readiness score
+12. Apply on the **company’s own website** (not here)
 
-You become ready here. You apply on the company’s own website.
+---
+
+## Student navigation
+
+Dashboard · My Profile · Resume Analysis · **Fix Resume** · Skill Gap · Preparation Plan · AI Examiner · Mock Interview · My Progress · Logout
+
+There is no Internships, Find Internship, or Applications menu.
 
 ---
 
@@ -73,21 +92,23 @@ You become ready here. You apply on the company’s own website.
 - Registration, login, and logout with hashed passwords
 - Profile with education, CGPA, skills, location, work mode, and **target role**
 - Resume upload (`.txt` / `.pdf`) or paste, with local skill extraction
+- Resume analysis: extracted skills, education / experience / projects flags, strengths, weak areas, completeness
+- **Fix Your Resume:** missing vs off-target content, recommended keywords, score check, HTML preview, downloadable PDF rebuilt for the target role (no invented jobs or companies)
 - Interview readiness composite (resume, technical skills, problem solving, communication, exam)
-- Role readiness using the same TF-IDF / skill / neural matcher (student ↔ target role)
-- Skill-gap analysis with HIGH / MEDIUM / LOW priority
+- Role readiness using the same TF-IDF / skill / neural matcher (**student ↔ target role**)
+- Skill-gap analysis: what you know, what you are missing, HIGH / MEDIUM / LOW priority
 - 14-day preparation plan from gaps and recent exam mistakes
-- AI examiner with keyword scoring, topic scores, and mistake review
+- AI examiner with keyword scoring, topic scores, mistake review, and retake
 - Mock (video-style) interview
 - Progress history of exam attempts
 - Dashboard with profile strength and readiness breakdown
 
-Old internship listing, detail, apply, and application URLs still exist but **redirect** to preparation pages. Internship tables are kept in SQLite and are not dropped.
+Old internship listing, detail, apply, and application **URLs still exist but redirect** to preparation pages. Internship tables are kept in SQLite and are not dropped.
 
 ### Admin
 
 - Separate admin login
-- Analytics from real database counts: students, resume analyses, examinations, average exam / readiness when calculable, common skill gaps, common mistakes, most selected target roles
+- Analytics from real database counts: students, resume analyses, examinations, average exam score when calculable, common skill gaps, common mistakes, most selected target roles
 - Student / user management
 - Old internship CRUD URLs redirect to analytics (tables are not deleted)
 
@@ -103,8 +124,10 @@ Old internship listing, detail, apply, and application URLs still exist but **re
 | Database | SQLite (`database/internmatch.db`) |
 | Matching | scikit-learn (`TfidfVectorizer`, cosine similarity, MLP) |
 | PDF parsing | pypdf |
+| Resume PDF export | reportlab |
 | Frontend | Jinja2 HTML templates, CSS, JavaScript |
 | Authentication | Flask sessions and Werkzeug password hashing |
+| Tests | pytest |
 
 This project does **not** use MySQL, MongoDB, Firebase, TensorFlow, or external LLM APIs.
 
@@ -114,28 +137,29 @@ This project does **not** use MySQL, MongoDB, Firebase, TensorFlow, or external 
 
 ```text
 internmatch/
-├── app.py                      # Student routes (preparation + disabled internship redirects)
-├── admin.py                    # Admin blueprint (/admin)
-├── config.py                   # Reads SECRET_KEY and passwords from the environment
-├── seed.py                     # Demo student, admin, prep columns, leftover sample internships
-├── tools.py                    # Resume, exam scoring, mock interview, extra tools
-├── import_internships.py       # Kept; leftover sample internship CSV loader
+├── app.py                      # Student routes (prep + Fix Resume + internship URL redirects)
+├── admin.py                    # Admin blueprint (/admin) — analytics and users
+├── config.py                   # SECRET_KEY and passwords from the environment
+├── seed.py                     # Demo student, admin, prep columns
+├── tools.py                    # Resume parse/score, exam scoring, extra tools
+├── import_internships.py       # Leftover CSV loader (listings are not shown to students)
 ├── .env.example
 ├── requirements.txt
 ├── data/
-│   └── internships.csv         # Leftover fictional listings (not shown to students)
+│   └── internships.csv         # Leftover fictional listings (not shown in the UI)
 ├── database/
-│   └── internmatch.db          # Created automatically on first run
+│   └── internmatch.db          # Created automatically on first run (gitignored)
 ├── ml/
 │   ├── matcher.py              # TF-IDF, cosine similarity, weighted score
 │   ├── neural_matcher.py       # Local scikit-learn MLP neural scores
-│   ├── recommender.py          # Ranked scores; now also score_role_readiness
-│   ├── roles.py                # Target role profiles
+│   ├── recommender.py          # score_role_readiness (student ↔ target role)
+│   ├── roles.py                # Target role skill catalogs
 │   ├── prep.py                 # Gaps, 14-day plan, mistakes, readiness composite
+│   ├── resume_fixer.py         # Add/remove/keywords + rebuilt resume PDF
 │   └── profile_strength.py     # Profile completeness
 ├── tests/
 ├── models/
-│   └── __init__.py             # User, Internship, Application, ExamAttempt
+│   └── __init__.py             # User, ExamAttempt; Internship/Application kept unused in UI
 ├── static/
 └── templates/
 ```
@@ -150,15 +174,16 @@ Browser (HTML / CSS / JS)
         ▼
 Flask (app.py + admin.py)
         │
-        ├── tools.py          Resume parsing and exam scoring
-        ├── ml/               TF-IDF matching reused as Student ↔ Target Role
+        ├── tools.py            Resume parsing and exam scoring
+        ├── ml/resume_fixer.py  Target-role resume rebuild + PDF
+        ├── ml/                 TF-IDF matching reused as Student ↔ Target Role
         └── Flask-SQLAlchemy
                 │
                 ▼
         SQLite (internmatch.db)
 ```
 
-The browser talks only to the local Flask server. Matching, resume analysis, and exam scoring run in Python on the same machine.
+The browser talks only to the local Flask server. Matching, resume analysis, exam scoring, and PDF rebuild run in Python on the same machine.
 
 ---
 
@@ -232,6 +257,8 @@ Then open **http://127.0.0.1:5000/**
 
 Stop the server with `Ctrl + C`. The database file is created at `database/internmatch.db` on first run.
 
+If the homepage shows a 500 error after a code update, stop the old Flask process and run `app.py` again. Debug is off by default, so template changes need a restart.
+
 ---
 
 ## Demo and admin accounts
@@ -255,14 +282,15 @@ Admin login is at `/admin/login`. The email defaults to `admin@internmatch.local
 
 1. Open http://127.0.0.1:5000/
 2. Register or log in with the demo account.
-3. Open **My Profile** and choose a target role.
+3. Open **My Profile** and choose a target role (for example Data Analyst or Web Developer).
 4. Open **Resume Analysis**. Paste a resume or upload a `.txt` / `.pdf` file (maximum 2 MB).
-5. Open **Check My Readiness** (from the dashboard or `/readiness`) to see the Student ↔ Target Role score.
-6. Open **Skill Gap** to see HIGH / MEDIUM / LOW missing skills.
-7. Open **Preparation Plan** for a 14-day plan.
-8. Open **AI Examiner**, finish an exam, and review mistakes.
-9. Open **Mock Interview** for a video-style practice round.
-10. Open **My Progress** to see score history.
+5. Open **Fix Resume** (`/resume-fixer`). Review what to add, what to de-emphasize, keywords, and the score, then **Download PDF Resume**.
+6. Open **Check My Readiness** (`/readiness`) for the Student ↔ Target Role score.
+7. Open **Skill Gap** to see HIGH / MEDIUM / LOW missing skills.
+8. Open **Preparation Plan** for a 14-day plan.
+9. Open **AI Examiner**, finish an exam, and review mistakes. Retake to see improvement.
+10. Open **Mock Interview** for a video-style practice round.
+11. Open **My Progress** to see score history.
 
 Internship browse / apply URLs redirect. Apply on official company sites after you practice.
 
@@ -283,15 +311,15 @@ Students who open `/admin` routes receive a 403 error.
 
 All matching is local. No OpenAI or other cloud model is called.
 
-Previously the compared document was an internship listing. Now it is a **target role profile** with required skills and a short description. The same functions still run:
+The compared document used to be an internship listing. It is now a **target role profile** with required skills and a short description. The same functions still run:
 
 1. **Resume parsing** — paste, `.txt`, or `.pdf` (pypdf).
 2. **Skill extraction** — resume text matched against a built-in skill list.
 3. **Student profile text** — skills, education, domain, work mode, and location.
-4. **Role text** — title, description, and required skills.
+4. **Role text** — title, description, and required skills (`ml/roles.py`).
 5. **TF-IDF** — `TfidfVectorizer` with English stop words.
 6. **Cosine similarity** — student vector vs role vector, scaled to 0–100.
-7. **Final / readiness score**
+7. **Final / role-readiness score**
    - 40% skill overlap
    - 20% TF-IDF cosine similarity
    - 15% local neural network (scikit-learn MLP)
@@ -301,8 +329,11 @@ Previously the compared document was an internship listing. Now it is a **target
 8. **Skill gap** — required role skills the student does not have.
 9. **Explanation** — a short sentence built from those signals.
 10. **Interview readiness composite** — resume strength, technical skills, problem solving, communication, and last exam.
+11. **Resume fixer** — rule-based rewrite + keywords from the role catalog; PDF via reportlab. Does not invent work history.
 
 The neural model is a **multi-layer perceptron** (`sklearn.neural_network`). It is not ChatGPT, BERT, or any cloud API.
+
+Function names such as `score_internship()` remain in `ml/matcher.py` so older tests still pass. The student UI calls `score_role_readiness()` instead of listing internships.
 
 ---
 
@@ -310,19 +341,18 @@ The neural model is a **multi-layer perceptron** (`sklearn.neural_network`). It 
 
 ### User
 
-`id`, `name`, `email`, `password` (hashed), `education`, `cgpa`, `location`, `preferred_domain`, `preferred_work_mode`, `skills`, `is_admin`, `target_role`, `resume_analyzed_count`
-
-### Internship (kept, not shown)
-
-`id`, `company`, `title`, `description`, `required_skills`, `location`, `work_mode`, `duration`, `stipend`
-
-### Application (kept, not shown)
-
-`id`, `user_id`, `internship_id`, `status`, `applied_date`
+`id`, `name`, `email`, `password` (hashed), `education`, `cgpa`, `location`, `preferred_domain`, `preferred_work_mode`, `skills`, `is_admin`, `target_role`, `resume_analyzed_count`, `last_resume_text`
 
 ### ExamAttempt
 
 `id`, `user_id`, `target_role`, `overall_score`, `topic_scores`, `mistakes`, `created_at`
+
+### Internship and Application (kept, not shown)
+
+These tables remain so existing code and SQLite files are not destroyed. The student UI does not list internships or process applications.
+
+- Internship: `id`, `company`, `title`, `description`, `required_skills`, `location`, `work_mode`, `duration`, `stipend`
+- Application: `id`, `user_id`, `internship_id`, `status`, `applied_date`
 
 ---
 
@@ -330,6 +360,7 @@ The neural model is a **multi-layer perceptron** (`sklearn.neural_network`). It 
 
 - Matching uses TF-IDF, cosine similarity, and a local scikit-learn neural network (MLP). It is not ChatGPT or a transformer LLM.
 - Resume skills are limited to the built-in skill list.
+- The rebuilt PDF only reorganizes facts from the uploaded resume and profile. Missing items appear as suggested additions, not fake jobs.
 - Readiness and exam scores are estimates for practice. They do not guarantee a job.
 - The mock interview uses the browser camera and keyword scoring; it is not a live AI video call.
 - The leftover scam detector uses keyword flags, not a live company verification service.
@@ -344,7 +375,7 @@ The neural model is a **multi-layer perceptron** (`sklearn.neural_network`). It 
 .\venv\Scripts\python.exe -m pytest
 ```
 
-Tests cover skill matching, the neural scorer, the leftover recommender helper, login, readiness, skill gap, the examiner, and the internship redirect.
+Tests cover skill matching, the neural scorer, role readiness, login, skill gap, the examiner, internship URL redirects, and Fix Resume / PDF.
 
 ---
 
@@ -354,9 +385,11 @@ Tests cover skill matching, the neural scorer, the leftover recommender helper, 
 | --- | --- |
 | `python` is not recognized | Install Python 3.12 and tick **Add Python to PATH**. Use `.\venv\Scripts\python.exe` instead. |
 | PDF resume is not accepted | Use `.txt` or `.pdf` only, and keep the file under 2 MB. |
+| Fix Resume says there is no resume | Analyze or paste a resume first on **Resume Analysis**. |
 | Readiness looks empty | Log in as the demo student, or add skills on the profile / resume analyzer. |
 | Port 5000 is already in use | Close the other program using that port, then run `app.py` again. |
+| Homepage 500 after an update | Restart `app.py` so Flask loads the new routes. |
 | `SECRET_KEY is missing` | Copy `.env.example` to `.env` and set `SECRET_KEY`. |
 | Admin login fails | Use the password from your `.env` `ADMIN_PASSWORD`. |
 
-For a viva, start with this file, then walk through `app.py` (routes), `ml/prep.py` (readiness and plans), `ml/matcher.py` (scoring), and `models/__init__.py` (database).
+For a viva, start with this file, then walk through `app.py` (routes), `ml/prep.py` (readiness and plans), `ml/resume_fixer.py` (PDF rebuild), `ml/matcher.py` (scoring), and `models/__init__.py` (database).

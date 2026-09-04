@@ -1,4 +1,8 @@
-"""Rank internships or target roles using TF-IDF matching and a local neural network."""
+"""Rank target-role readiness using TF-IDF matching and a local neural network.
+
+recommend_internships() is a legacy helper kept for tests. The student UI
+uses score_role_readiness() (Student ↔ Target Role), not internship listings.
+"""
 
 from ml.matcher import (
     compute_text_similarities,

@@ -22,7 +22,7 @@ CAREER_ROADMAPS = {
     "Web Development": [
         {"level": "Foundation", "title": "Learn the web basics", "skills": ["HTML", "CSS", "JavaScript"], "goal": "Build 2 static website pages."},
         {"level": "Backend", "title": "Add a Python backend", "skills": ["Python", "Flask", "SQLite"], "goal": "Create a login form that stores users locally."},
-        {"level": "Projects", "title": "Make internship-ready projects", "skills": ["Git", "GitHub", "Bootstrap"], "goal": "Put 3 projects on GitHub with README files."},
+        {"level": "Projects", "title": "Make interview-ready projects", "skills": ["Git", "GitHub", "Bootstrap"], "goal": "Put 3 projects on GitHub with README files."},
         {"level": "Internship", "title": "Apply with a focused profile", "skills": ["Communication", "SQL"], "goal": "Apply to web internships that match your stack."},
     ],
     "Data Analysis": [
