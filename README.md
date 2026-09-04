@@ -63,7 +63,7 @@ cp .env.example .env
 nano .env
 ```
 
-If `python3.10` is not available, try `python3.12` or `python3.11`.
+If `python3.10` is not available, try `python3.12` or `python3.11`. On Python 3.10, pip will install scikit-learn 1.7.x (1.9 is not published for that version). Matching still works.
 
 In `.env` set:
 
