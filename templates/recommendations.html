@@ -28,7 +28,7 @@
             {% elif not internships_available %}
             <section class="empty-state">
                 <h2>No internships found</h2>
-                <p class="auth-subtitle">Import the sample dataset first with <strong>python import_internships.py</strong>.</p>
+                <p class="auth-subtitle">Sample internships load automatically when the app starts.</p>
                 <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
             </section>
             {% elif not recommendations %}

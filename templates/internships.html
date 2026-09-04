@@ -15,7 +15,7 @@
                 <div>
                     <p class="badge">Sample Dataset</p>
                     <h1>Internship Listings</h1>
-                    <p class="auth-subtitle">Realistic sample internships for practice. Log in to apply and track your applications.</p>
+                    <p class="auth-subtitle">These are fictional sample internships for the academic demo. They are not real job openings. Log in to apply and track applications.</p>
                 </div>
             </section>
 
@@ -69,7 +69,7 @@
                 <a class="btn" href="{{ url_for('internships') }}">Reset filters</a>
                 {% else %}
                 <h2>No internships available</h2>
-                <p class="auth-subtitle">If this is your first time, import the sample CSV with <strong>python import_internships.py</strong>.</p>
+                <p class="auth-subtitle">Sample internships load automatically when the app starts. If this list is empty, restart the app.</p>
                 {% endif %}
             </section>
             {% endif %}

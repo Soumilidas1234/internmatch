@@ -15,11 +15,19 @@
                 <p class="badge">Welcome Back</p>
                 <h1>Student Login</h1>
                 <p class="auth-subtitle">Log in to open your dashboard.</p>
+                {% if show_demo_login %}
+                <div class="demo-login-card">
+                    <p class="preview-label">Examiner demo account</p>
+                    <p>Email: <code>{{ demo_student_email }}</code></p>
+                    <p>Password: <code>{{ demo_student_password }}</code></p>
+                    <p class="auth-subtitle">Internships are fictional sample data for this academic project.</p>
+                </div>
+                {% endif %}
 
                 <form method="POST" action="{{ url_for('login') }}">
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" id="email" name="email" value="{{ demo_student_email if show_demo_login else '' }}" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>

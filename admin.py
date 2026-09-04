@@ -4,14 +4,11 @@ from functools import wraps
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from sqlalchemy.exc import IntegrityError
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 
 from models import Application, Internship, User, db
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-
-ADMIN_EMAIL = "admin@internmatch.local"
-ADMIN_PASSWORD = "Admin@123"
 ADMIN_STATUSES = (
     "Pending",
     "Applied",
@@ -83,31 +80,6 @@ def ensure_admin_schema():
             db.text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0")
         )
         db.session.commit()
-
-
-def ensure_admin_user():
-    """Create a local admin account if one does not already exist."""
-    admin = User.query.filter_by(email=ADMIN_EMAIL).first()
-    if admin:
-        if not admin.is_admin:
-            admin.is_admin = True
-            db.session.commit()
-        return
-
-    admin = User(
-        name="InternMatch Admin",
-        email=ADMIN_EMAIL,
-        password=generate_password_hash(ADMIN_PASSWORD, method="pbkdf2:sha256"),
-        education="Administrator",
-        cgpa=None,
-        location="Local",
-        preferred_domain="Administration",
-        preferred_work_mode="Remote",
-        skills="System management",
-        is_admin=True,
-    )
-    db.session.add(admin)
-    db.session.commit()
 
 
 @admin_bp.route("/login", methods=["GET", "POST"])

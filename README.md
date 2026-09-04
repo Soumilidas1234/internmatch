@@ -1,10 +1,25 @@
 # InternMatch AI
 
-InternMatch AI is a local Flask web application that helps students discover internships that fit their skills, education, location, and work-mode preference. Matching is done on the machine with TF-IDF, cosine similarity, and a weighted scoring model. There are no cloud AI APIs.
+InternMatch AI is a Flask web application that helps students discover internships that fit their skills, education, location, and work-mode preference. Matching uses TF-IDF, cosine similarity, and a weighted scoring model. There are no cloud AI APIs.
 
-This repository is a final-year academic project. Internship listings are fictional sample data.
+This is a final-year academic project. **All internship listings are fictional sample data for demonstration. They are not real job openings.**
 
-**Live repository:** [https://github.com/Soumilidas1234/internmatch](https://github.com/Soumilidas1234/internmatch)
+**Source code:** [https://github.com/Soumilidas1234/internmatch](https://github.com/Soumilidas1234/internmatch)
+
+---
+
+## Live demo (for examiners)
+
+**App URL:** _will be added after deployment_
+
+| | |
+| --- | --- |
+| Student email | `demo.student@internmatch.local` |
+| Student password | `Demo@123` |
+
+Use the student login above. You should see sample internships, recommendations, and application tracking. Do not treat any listing as a real internship.
+
+The admin password is not stored in source code. It is set with the `ADMIN_PASSWORD` environment variable.
 
 ---
 
@@ -17,7 +32,7 @@ This repository is a final-year academic project. Internship listings are fictio
 5. [Prerequisites](#prerequisites)
 6. [Step-by-step setup](#step-by-step-setup)
 7. [How to run the application](#how-to-run-the-application)
-8. [Default accounts](#default-accounts)
+8. [Demo and admin accounts](#demo-and-admin-accounts)
 9. [Student walkthrough](#student-walkthrough)
 10. [Admin walkthrough](#admin-walkthrough)
 11. [Matching engine](#matching-engine)
@@ -73,8 +88,13 @@ This project does **not** use MySQL, MongoDB, Firebase, TensorFlow, or external 
 internmatch/
 ├── app.py                      # Main Flask application (student routes)
 ├── admin.py                    # Admin blueprint (/admin)
+├── config.py                   # Reads SECRET_KEY and passwords from the environment
+├── seed.py                     # Demo student, admin, and sample internship setup
 ├── tools.py                    # Resume, roadmap, interview, and other tools
 ├── import_internships.py       # Load sample internships from CSV
+├── .env.example                # Environment variable template
+├── Procfile                    # Production start command
+├── render.yaml                 # Render.com deploy blueprint
 ├── requirements.txt            # Python dependencies
 ├── data/
 │   └── internships.csv         # Fictional internship dataset
@@ -176,17 +196,23 @@ The prompt should show `(venv)` when activation succeeds.
 pip install -r requirements.txt
 ```
 
-This installs Flask, Flask-SQLAlchemy, scikit-learn, and pypdf.
+This installs Flask, Flask-SQLAlchemy, scikit-learn, pypdf, python-dotenv, and gunicorn.
 
-### Step 5 — (Optional) Load sample internships
-
-The first time the app starts, it creates the SQLite database and an admin user. Internship rows come from the CSV file. If the internships page is empty, run:
+### Step 5 — Create a local `.env` file
 
 ```powershell
-python import_internships.py
+copy .env.example .env
 ```
 
-To replace existing internship rows with the CSV data:
+Open `.env` and set:
+
+- `SECRET_KEY` to a long random string
+- `ADMIN_PASSWORD` to a private admin password
+- Leave `DEMO_STUDENT_PASSWORD=Demo@123` so the examiner account works
+
+Do not commit `.env`. It is ignored by git.
+
+Sample internships load automatically on first start from `data/internships.csv`. To reload them:
 
 ```powershell
 python import_internships.py --replace
@@ -212,21 +238,20 @@ The database file is created automatically at `database/internmatch.db` on first
 
 ---
 
-## Default accounts
+## Demo and admin accounts
 
-### Admin
+### Examiner student (shown on the website)
 
 | Field | Value |
 | --- | --- |
-| URL | http://127.0.0.1:5000/admin/login |
-| Email | `admin@internmatch.local` |
-| Password | `Admin@123` |
+| Email | `demo.student@internmatch.local` |
+| Password | `Demo@123` |
 
-This account is created automatically if it does not already exist. Change the password for any shared or public deployment.
+This account is created on startup. It already has a sample BCA profile and skills so recommendations work immediately.
 
-### Student
+### Admin
 
-There is no pre-created student account. Use **Register** on the home page, then log in.
+Admin login is at `/admin/login`. The email defaults to `admin@internmatch.local`. The password comes from `ADMIN_PASSWORD` in `.env` (or the host environment). It is not written in the Python source.
 
 ---
 
@@ -303,7 +328,8 @@ Unique pair: one application per student per internship.
 - Internship data is fictional and meant for demonstration.
 - The video interview uses the browser camera and keyword scoring; it is not a live AI video call.
 - The scam detector uses keyword flags, not a live company verification service.
-- The Flask development server (`debug=True`) is for local use, not production hosting.
+- Flask debug mode is off by default (`FLASK_DEBUG=0`).
+- SQLite is used for this academic demo. Hosted free services may reset the database after idle restarts; sample internships and the demo student are recreated automatically.
 
 ---
 
@@ -312,10 +338,11 @@ Unique pair: one application per student per internship.
 | Problem | What to try |
 | --- | --- |
 | `python` is not recognized | Install Python 3.12 and tick **Add Python to PATH**. |
-| Internships page is empty | Run `python import_internships.py`. |
+| Internships page is empty | Restart the app. Sample internships are imported automatically. |
 | PDF resume is not accepted | Use `.txt` or `.pdf` only, and keep the file under 2 MB. |
-| Recommendations are empty | Add skills on the profile or run Resume Analyzer first. |
+| Recommendations are empty | Log in as the demo student, or add skills on the profile. |
 | Port 5000 is already in use | Close the other program using that port, then run `python app.py` again. |
-| Admin login fails | Use `admin@internmatch.local` / `Admin@123`. Registering a normal student does not create an admin. |
+| `SECRET_KEY is missing` | Copy `.env.example` to `.env` and set `SECRET_KEY`. |
+| Admin login fails | Use the password from your `.env` `ADMIN_PASSWORD`. It is not stored in the code. |
 
 For project documentation or a viva, start with this file, then walk through `app.py` (routes), `ml/matcher.py` (scoring), and `models/__init__.py` (database).

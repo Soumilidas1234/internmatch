@@ -606,6 +606,46 @@ button.btn {
     color: #bbf7d0;
 }
 
+.demo-banner {
+    background: rgba(15, 118, 110, 0.22);
+    border-bottom: 1px solid rgba(45, 212, 191, 0.28);
+}
+
+.demo-banner-inner {
+    padding: 12px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.demo-banner p {
+    margin: 0;
+    color: #d1fae5;
+    font-size: 14px;
+}
+
+.demo-banner code,
+.demo-login-card code {
+    background: rgba(15, 23, 42, 0.35);
+    padding: 2px 8px;
+    border-radius: 8px;
+    color: #a7f3d0;
+}
+
+.demo-login-card {
+    margin: 0 0 22px;
+    padding: 16px;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-radius: 16px;
+    background: rgba(6, 78, 59, 0.28);
+}
+
+.demo-login-card p {
+    margin: 0 0 8px;
+}
+
 .dashboard-header {
     display: flex;
     justify-content: space-between;

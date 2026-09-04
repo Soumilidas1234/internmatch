@@ -6,10 +6,12 @@ from flask import Flask, abort, flash, jsonify, redirect, render_template, reque
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from admin import admin_bp, ensure_admin_schema, ensure_admin_user
+from admin import admin_bp, ensure_admin_schema
+from config import DEBUG, SECRET_KEY, validate_settings
 from ml.profile_strength import collect_skill_gaps, compute_profile_strength
 from ml.recommender import recommend_internships, student_has_skills
 from models import Application, Internship, User, db
+from seed import ensure_admin_user, ensure_demo_student, ensure_sample_internships
 from tools import (
     DOMAINS,
     analyze_resume,
@@ -22,10 +24,12 @@ from tools import (
     score_one_answer,
 )
 
+validate_settings()
+
 app = Flask(__name__)
 
-# Needed for Flask sessions (login state)
-app.config["SECRET_KEY"] = "internmatch-ai-local-secret-key"
+# Session signing key comes from the environment, not from source code
+app.config["SECRET_KEY"] = SECRET_KEY
 
 # Local SQLite database file inside the project
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -152,9 +156,14 @@ def inject_nav_user():
     user = None
     if session.get("user_id"):
         user = db.session.get(User, session["user_id"])
+    from config import DEMO_STUDENT_EMAIL, DEMO_STUDENT_PASSWORD
+
     return {
         "nav_user": user,
         "is_admin": bool(user and getattr(user, "is_admin", False)),
+        "demo_student_email": DEMO_STUDENT_EMAIL,
+        "demo_student_password": DEMO_STUDENT_PASSWORD,
+        "show_demo_login": bool(DEMO_STUDENT_PASSWORD),
     }
 
 
@@ -875,7 +884,7 @@ def server_error(_error):
             title="Something went wrong",
             badge="500",
             heading="InternMatch AI hit a problem",
-            message="Please try again. If this continues, restart the local Flask app.",
+            message="Please try again. If this continues, refresh the page or restart the app.",
             home_endpoint="home",
             button="Back to home",
         ),
@@ -889,6 +898,8 @@ with app.app_context():
     db.create_all()
     ensure_admin_schema()
     ensure_admin_user()
+    ensure_demo_student()
+    ensure_sample_internships()
     db.session.execute(
         db.text(
             "CREATE UNIQUE INDEX IF NOT EXISTS uq_user_internship "
@@ -899,4 +910,4 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=DEBUG, host="127.0.0.1", port=int(os.environ.get("PORT", 5000)))
