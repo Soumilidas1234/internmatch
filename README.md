@@ -10,30 +10,20 @@ This is a final-year academic project. **All internship listings are fictional s
 
 ## Live demo (for examiners)
 
-**Student login (also shown on the website)**
+Run the app locally, then open **http://127.0.0.1:5000/**
+
+The website banner and login page show this student account:
 
 | | |
 | --- | --- |
 | Email | `demo.student@internmatch.local` |
 | Password | `Demo@123` |
 
-Internship listings are **fictional sample data**, not real jobs.
+Use that login to see recommendations, sample internships, and application tracking. Internship listings are **fictional sample data**, not real jobs.
 
-### Hosted URL
+There is **no public hosted URL**. This project is meant to be demonstrated on the student’s computer.
 
-After you deploy (one-time, free), the app URL is usually:
-
-`https://internmatch.onrender.com`
-
-Deploy from GitHub with this button:
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Soumilidas1234/internmatch)
-
-Or: [Open Render deploy](https://render.com/deploy?repo=https://github.com/Soumilidas1234/internmatch)
-
-Sign in with GitHub, click **Apply**, wait until the service is Live, then copy the `.onrender.com` URL. Send that URL to the examiner with the student login above.
-
-The admin password is **not** on the website. Set it as `ADMIN_PASSWORD` in the host environment (Render generates one if you use `render.yaml`).
+The admin password is not on the website. Set it as `ADMIN_PASSWORD` in the local `.env` file.
 
 ---
 
@@ -107,8 +97,6 @@ internmatch/
 ├── tools.py                    # Resume, roadmap, interview, and other tools
 ├── import_internships.py       # Load sample internships from CSV
 ├── .env.example                # Environment variable template
-├── Procfile                    # Production start command
-├── render.yaml                 # Render.com deploy blueprint
 ├── requirements.txt            # Python dependencies
 ├── data/
 │   └── internships.csv         # Fictional internship dataset
@@ -210,7 +198,7 @@ The prompt should show `(venv)` when activation succeeds.
 pip install -r requirements.txt
 ```
 
-This installs Flask, Flask-SQLAlchemy, scikit-learn, pypdf, python-dotenv, and gunicorn.
+This installs Flask, Flask-SQLAlchemy, scikit-learn, pypdf, and python-dotenv.
 
 ### Step 5 — Create a local `.env` file
 
@@ -343,7 +331,7 @@ Unique pair: one application per student per internship.
 - The video interview uses the browser camera and keyword scoring; it is not a live AI video call.
 - The scam detector uses keyword flags, not a live company verification service.
 - Flask debug mode is off by default (`FLASK_DEBUG=0`).
-- SQLite is used for this academic demo. Hosted free services may reset the database after idle restarts; sample internships and the demo student are recreated automatically.
+- SQLite is used for this academic demo. Sample internships and the demo student are created automatically on first run.
 
 ---
 

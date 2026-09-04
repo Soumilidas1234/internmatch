@@ -21,7 +21,7 @@ ADMIN_PASSWORD = env("ADMIN_PASSWORD")
 DEMO_STUDENT_EMAIL = env("DEMO_STUDENT_EMAIL", "demo.student@internmatch.local").lower()
 DEMO_STUDENT_PASSWORD = env("DEMO_STUDENT_PASSWORD")
 DEBUG = env_flag("FLASK_DEBUG", "0")
-IS_PRODUCTION = env("FLASK_ENV").lower() == "production" or bool(env("RENDER"))
+IS_PRODUCTION = env("FLASK_ENV").lower() == "production"
 
 
 def validate_settings():
