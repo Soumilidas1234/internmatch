@@ -1,4 +1,4 @@
-"""Score how complete a student profile is for internship matching."""
+"""Score how complete a student profile is for interview preparation."""
 
 from ml.matcher import parse_skills
 
@@ -30,7 +30,7 @@ def compute_profile_strength(user, resume_analyzed=False):
         ("Education", user.education, 10, "Add your education."),
         ("CGPA", user.cgpa, 10, "Add your CGPA."),
         ("Location", user.location, 10, "Add your location."),
-        ("Preferred domain", user.preferred_domain, 10, "Choose a preferred internship domain."),
+        ("Preferred domain", user.preferred_domain, 10, "Choose a target role."),
         ("Preferred work mode", user.preferred_work_mode, 10, "Choose a preferred work mode."),
     ]
 
@@ -80,7 +80,7 @@ def compute_profile_strength(user, resume_analyzed=False):
     if score >= 80:
         suggestions.append(
             {
-                "text": "Your profile looks strong. Review your top internship matches.",
+                "text": "Your profile looks strong. Check role readiness or start an AI exam.",
                 "href": "recommendations",
             }
         )

@@ -20,6 +20,9 @@ class User(db.Model):
     preferred_work_mode = db.Column(db.String(50))
     skills = db.Column(db.Text)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    target_role = db.Column(db.String(120))
+    resume_analyzed_count = db.Column(db.Integer, default=0, nullable=False)
+    last_resume_text = db.Column(db.Text)
 
     # One user can have many applications
     applications = db.relationship("Application", back_populates="user", lazy=True)
@@ -66,3 +69,38 @@ class Application(db.Model):
 
     def __repr__(self):
         return f"<Application {self.id}>"
+
+
+class ExamAttempt(db.Model):
+    """Stores AI examiner attempts so students can see improvement over time."""
+
+    __tablename__ = "exam_attempts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    target_role = db.Column(db.String(120))
+    overall_score = db.Column(db.Integer, default=0)
+    topic_scores = db.Column(db.Text)
+    mistakes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="exam_attempts")
+
+    def topic_map(self):
+        import json
+
+        try:
+            return json.loads(self.topic_scores or "{}")
+        except (TypeError, ValueError):
+            return {}
+
+    def mistake_list(self):
+        import json
+
+        try:
+            return json.loads(self.mistakes or "[]")
+        except (TypeError, ValueError):
+            return []
+
+    def __repr__(self):
+        return f"<ExamAttempt {self.id}>"

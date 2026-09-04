@@ -1,21 +1,33 @@
+import json
 import os
 import re
 from functools import wraps
+from io import BytesIO
 
-from flask import Flask, abort, flash, jsonify, redirect, render_template, request, session, url_for
-from sqlalchemy.exc import IntegrityError
+from flask import Flask, flash, jsonify, redirect, render_template, request, send_file, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from admin import admin_bp, ensure_admin_schema
-from config import DEBUG, SECRET_KEY, validate_settings
-from ml.profile_strength import collect_skill_gaps, compute_profile_strength
-from ml.recommender import recommend_internships, student_has_skills
-from models import Application, Internship, User, db
-from seed import ensure_admin_user, ensure_demo_student, ensure_sample_internships
+from config import DATABASE_URI, DB_FOLDER, DEBUG, SECRET_KEY, validate_settings
+from ml.prep import (
+    analyze_exam_mistakes,
+    build_preparation_plan,
+    interview_readiness,
+    prioritize_missing,
+    role_readiness_for,
+    split_known_missing,
+    topic_scores_from_results,
+    user_target_role,
+)
+from ml.profile_strength import compute_profile_strength
+from ml.recommender import student_has_skills
+from ml.resume_fixer import build_resume_fix, render_resume_pdf, stored_resume_text
+from ml.roles import ROLE_NAMES, get_role_spec
+from models import ExamAttempt, User, db
+from seed import ensure_admin_user, ensure_demo_student, ensure_prep_schema, ensure_sample_internships
 from tools import (
     DOMAINS,
     analyze_resume,
-    build_roadmap,
     detect_scam,
     extract_resume_text,
     get_interview_questions,
@@ -30,13 +42,7 @@ app = Flask(__name__)
 
 # Session signing key comes from the environment, not from source code
 app.config["SECRET_KEY"] = SECRET_KEY
-
-# Local SQLite database file inside the project
-basedir = os.path.abspath(os.path.dirname(__file__))
-db_folder = os.path.join(basedir, "database")
-db_path = os.path.join(db_folder, "internmatch.db")
-
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_path
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -59,68 +65,6 @@ def login_required(view_func):
     return wrapper
 
 
-APPLICATION_STATUSES = (
-    "Applied",
-    "Shortlisted",
-    "Interview",
-    "Selected",
-    "Rejected",
-)
-APPLICATION_PROGRESS = ("Applied", "Shortlisted", "Interview", "Selected")
-
-
-def normalize_application_status(status):
-    if status == "Pending":
-        return "Applied"
-    if status == "Accepted":
-        return "Selected"
-    if status in APPLICATION_STATUSES:
-        return status
-    return "Applied"
-
-
-def application_timeline(status):
-    current = normalize_application_status(status)
-    rejected = current == "Rejected"
-    steps = []
-    current_index = APPLICATION_PROGRESS.index(current) if current in APPLICATION_PROGRESS else 0
-    for index, name in enumerate(APPLICATION_PROGRESS):
-        if rejected:
-            steps.append({"name": name, "done": name == "Applied", "current": False})
-        else:
-            steps.append(
-                {
-                    "name": name,
-                    "done": index <= current_index,
-                    "current": name == current,
-                }
-            )
-    return {"steps": steps, "rejected": rejected, "status": current}
-
-
-def application_overview(applications):
-    statuses = [normalize_application_status(item.status) for item in applications]
-    return {
-        "total": len(statuses),
-        "shortlisted": statuses.count("Shortlisted"),
-        "interviews": statuses.count("Interview"),
-        "selected": statuses.count("Selected"),
-        "rejected": statuses.count("Rejected"),
-    }
-
-
-INTERNSHIP_DOMAINS = [
-    "Data Analytics",
-    "Data Science",
-    "Machine Learning",
-    "Python Development",
-    "Web Development",
-    "Java Development",
-    "UI/UX",
-    "Cybersecurity",
-    "Cloud Computing",
-    "Software Testing",
-]
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -133,12 +77,14 @@ def student_match_payload(user):
     combined_skills = ", ".join(
         part for part in [user.skills or "", resume_skills] if part
     )
+    target = user_target_role(user)
     return {
         "skills": combined_skills,
         "education": user.education or "",
-        "preferred_domain": user.preferred_domain or "",
+        "preferred_domain": target,
         "preferred_work_mode": user.preferred_work_mode or "",
         "location": user.location or "",
+        "target_role": target,
     }
 
 
@@ -181,9 +127,10 @@ def register():
         education = request.form.get("education", "").strip()
         cgpa_value = request.form.get("cgpa", "").strip()
         location = request.form.get("location", "").strip()
-        preferred_domain = request.form.get("preferred_domain", "").strip()
-        preferred_work_mode = request.form.get("preferred_work_mode", "").strip()
+        preferred_domain = request.form.get("target_role") or request.form.get("preferred_domain", "").strip()
+        preferred_work_mode = request.form.get("preferred_work_mode", "").strip() or "Hybrid"
         skills = request.form.get("skills", "").strip()
+        target_role = request.form.get("target_role", "").strip() or preferred_domain
 
         # Check that all fields are filled
         if not all(
@@ -195,20 +142,19 @@ def register():
                 cgpa_value,
                 location,
                 preferred_domain,
-                preferred_work_mode,
                 skills,
             ]
         ):
             flash("Please fill in all fields.", "error")
-            return render_template("register.html", form=request.form)
+            return render_template("register.html", form=request.form, roles=ROLE_NAMES)
 
         if not is_valid_email(email):
             flash("Please enter a valid email address.", "error")
-            return render_template("register.html", form=request.form)
+            return render_template("register.html", form=request.form, roles=ROLE_NAMES)
 
         if len(password) < 6:
             flash("Password must be at least 6 characters.", "error")
-            return render_template("register.html", form=request.form)
+            return render_template("register.html", form=request.form, roles=ROLE_NAMES)
 
         try:
             cgpa = float(cgpa_value)
@@ -216,12 +162,12 @@ def register():
                 raise ValueError("CGPA out of range")
         except ValueError:
             flash("Please enter a valid CGPA between 0 and 10.", "error")
-            return render_template("register.html", form=request.form)
+            return render_template("register.html", form=request.form, roles=ROLE_NAMES)
 
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash("This email is already registered. Please log in.", "error")
-            return render_template("register.html", form=request.form)
+            return render_template("register.html", form=request.form, roles=ROLE_NAMES)
 
         # Hash the password before saving it
         hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
@@ -237,6 +183,7 @@ def register():
             preferred_work_mode=preferred_work_mode,
             skills=skills,
             is_admin=False,
+            target_role=target_role,
         )
         db.session.add(new_user)
         db.session.commit()
@@ -244,7 +191,7 @@ def register():
         flash("Registration successful. Please log in.", "success")
         return redirect(url_for("login"))
 
-    return render_template("register.html", form={})
+    return render_template("register.html", form={}, roles=ROLE_NAMES)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -298,19 +245,20 @@ def profile():
         education = request.form.get("education", "").strip()
         cgpa_value = request.form.get("cgpa", "").strip()
         location = request.form.get("location", "").strip()
-        preferred_domain = request.form.get("preferred_domain", "").strip()
-        preferred_work_mode = request.form.get("preferred_work_mode", "").strip()
+        preferred_domain = request.form.get("target_role") or request.form.get("preferred_domain", "").strip()
+        preferred_work_mode = request.form.get("preferred_work_mode", "").strip() or "Hybrid"
         skills = request.form.get("skills", "").strip()
+        target_role = request.form.get("target_role", "").strip() or preferred_domain
 
         if not all(
-            [name, email, education, cgpa_value, location, preferred_domain, preferred_work_mode, skills]
+            [name, email, education, cgpa_value, location, preferred_domain, skills]
         ):
             flash("Please fill in all profile fields.", "error")
-            return render_template("profile.html", user=user)
+            return render_template("profile.html", user=user, roles=ROLE_NAMES)
 
         if not is_valid_email(email):
             flash("Please enter a valid email address.", "error")
-            return render_template("profile.html", user=user)
+            return render_template("profile.html", user=user, roles=ROLE_NAMES)
 
         try:
             cgpa = float(cgpa_value)
@@ -318,12 +266,12 @@ def profile():
                 raise ValueError("CGPA out of range")
         except ValueError:
             flash("Please enter a valid CGPA between 0 and 10.", "error")
-            return render_template("profile.html", user=user)
+            return render_template("profile.html", user=user, roles=ROLE_NAMES)
 
         taken = User.query.filter(User.email == email, User.id != user.id).first()
         if taken:
             flash("That email is already used by another account.", "error")
-            return render_template("profile.html", user=user)
+            return render_template("profile.html", user=user, roles=ROLE_NAMES)
 
         user.name = name
         user.email = email
@@ -333,12 +281,13 @@ def profile():
         user.preferred_domain = preferred_domain
         user.preferred_work_mode = preferred_work_mode
         user.skills = skills
+        user.target_role = target_role
         db.session.commit()
         session["user_name"] = user.name
         flash("Profile updated.", "success")
         return redirect(url_for("profile"))
 
-    return render_template("profile.html", user=user)
+    return render_template("profile.html", user=user, roles=ROLE_NAMES)
 
 
 @app.route("/dashboard")
@@ -347,59 +296,87 @@ def dashboard():
     user = get_current_user()
     if user is None:
         return redirect(url_for("login"))
-    applications = (
-        Application.query.filter_by(user_id=user.id)
-        .order_by(Application.applied_date.desc())
-        .all()
-    )
-    overview = application_overview(applications)
 
     resume_analyzed = bool(session.get("resume_analyzed"))
     profile = compute_profile_strength(user, resume_analyzed=resume_analyzed)
     student = student_match_payload(user)
-
-    internships_available = Internship.query.count() > 0
-    need_resume = not student_has_skills(student)
-    top_matches = []
-    skill_gaps = []
-    if internships_available and not need_resume:
-        top_matches = recommend_internships(student, Internship.query.all(), top_n=3)
-        skill_gaps = collect_skill_gaps(top_matches)
+    target = user_target_role(user)
+    need_skills = not student_has_skills(student)
+    match = role_readiness_for(student, target) if not need_skills else None
+    have, missing, _required = split_known_missing(student["skills"], target)
+    attempts = (
+        ExamAttempt.query.filter_by(user_id=user.id)
+        .order_by(ExamAttempt.created_at.desc())
+        .all()
+    )
+    last_exam = attempts[0] if attempts else None
+    previous = attempts[1] if len(attempts) > 1 else None
+    improvement = None
+    if last_exam and previous:
+        improvement = last_exam.overall_score - previous.overall_score
+    readiness = interview_readiness(profile["score"], match or {}, last_exam)
+    mistakes = last_exam.mistake_list() if last_exam else []
+    plan = build_preparation_plan(student["skills"], target, attempts)
 
     return render_template(
         "dashboard.html",
         user=user,
-        applications=applications,
-        overview=overview,
         profile=profile,
-        top_matches=top_matches,
-        skill_gaps=skill_gaps,
-        need_resume=need_resume,
-        internships_available=internships_available,
+        target=target,
+        match=match,
+        have=have,
+        missing=missing,
+        need_skills=need_skills,
+        last_exam=last_exam,
+        improvement=improvement,
+        readiness=readiness,
+        mistakes=mistakes[:4],
+        plan=plan,
+        attempts=attempts[:5],
     )
 
 
 @app.route("/recommendations")
 @login_required
 def recommendations():
+    return redirect(url_for("readiness"))
+
+
+@app.route("/readiness", methods=["GET", "POST"])
+@login_required
+def readiness():
     user = get_current_user()
     if user is None:
         return redirect(url_for("login"))
 
-    student = student_match_payload(user)
+    if request.method == "POST":
+        custom = request.form.get("custom_role", "").strip()
+        chosen = custom or request.form.get("target_role", "").strip()
+        if chosen:
+            user.target_role = chosen
+            user.preferred_domain = chosen
+            db.session.commit()
+            flash("Target role saved. Role readiness is an estimate, not a job guarantee.", "success")
+            return redirect(url_for("readiness"))
 
-    internships_available = Internship.query.count() > 0
-    need_resume = not student_has_skills(student)
-    ranked = []
-    if internships_available and not need_resume:
-        ranked = recommend_internships(student, Internship.query.all(), top_n=10)
+    student = student_match_payload(user)
+    target = user_target_role(user)
+    need_skills = not student_has_skills(student)
+    match = None
+    have, missing, _required = [], [], []
+    if not need_skills:
+        match = role_readiness_for(student, target)
+        have, missing, _required = split_known_missing(student["skills"], target)
 
     return render_template(
-        "recommendations.html",
+        "readiness.html",
         user=user,
-        recommendations=ranked,
-        need_resume=need_resume,
-        internships_available=internships_available,
+        target=target,
+        match=match,
+        have=have,
+        missing=missing,
+        need_skills=need_skills,
+        roles=ROLE_NAMES,
     )
 
 
@@ -411,198 +388,57 @@ def skill_gap():
         return redirect(url_for("login"))
 
     student = student_match_payload(user)
-    internships_available = Internship.query.count() > 0
+    target = user_target_role(user)
     need_skills = not student_has_skills(student)
-    top_matches = []
-    skill_gaps = []
-    if internships_available and not need_skills:
-        top_matches = recommend_internships(student, Internship.query.all(), top_n=5)
-        skill_gaps = collect_skill_gaps(top_matches)
-
+    have, missing, _required = split_known_missing(student["skills"], target)
+    priority = prioritize_missing(missing)
     return render_template(
         "skill_gap.html",
         user=user,
-        top_matches=top_matches,
-        skill_gaps=skill_gaps,
+        target=target,
+        have=have,
+        missing=missing,
+        priority=priority,
         need_skills=need_skills,
-        internships_available=internships_available,
     )
+
+
+def _prep_redirect():
+    flash(
+        "InternMatch AI helps you prepare. Applications happen on the company's own website.",
+        "success",
+    )
+    if session.get("user_id"):
+        return redirect(url_for("dashboard"))
+    return redirect(url_for("home"))
 
 
 @app.route("/internships")
 def internships():
-    search = request.args.get("q", "").strip()
-    domain = request.args.get("domain", "").strip()
-    location = request.args.get("location", "").strip()
-    work_mode = request.args.get("work_mode", "").strip()
-
-    query = Internship.query
-
-    if search:
-        like = f"%{search}%"
-        query = query.filter(
-            db.or_(
-                Internship.title.ilike(like),
-                Internship.company.ilike(like),
-                Internship.required_skills.ilike(like),
-            )
-        )
-
-    if domain:
-        query = query.filter(Internship.description.ilike(f"%Domain: {domain}%"))
-
-    if location:
-        query = query.filter(Internship.location == location)
-
-    if work_mode:
-        query = query.filter(Internship.work_mode == work_mode)
-
-    internships_list = query.order_by(Internship.company, Internship.title).all()
-
-    locations = [
-        row[0]
-        for row in db.session.query(Internship.location)
-        .distinct()
-        .order_by(Internship.location)
-        if row[0]
-    ]
-    work_modes = [
-        row[0]
-        for row in db.session.query(Internship.work_mode)
-        .distinct()
-        .order_by(Internship.work_mode)
-        if row[0]
-    ]
-
-    return render_template(
-        "internships.html",
-        internships=internships_list,
-        search=search,
-        selected_domain=domain,
-        selected_location=location,
-        selected_work_mode=work_mode,
-        domains=INTERNSHIP_DOMAINS,
-        locations=locations,
-        work_modes=work_modes,
-        total=len(internships_list),
-        has_filters=bool(search or domain or location or work_mode),
-    )
+    return _prep_redirect()
 
 
 @app.route("/internship/<int:internship_id>")
 def internship_detail(internship_id):
-    internship = db.session.get(Internship, internship_id)
-    if internship is None:
-        flash("That internship was not found.", "error")
-        return redirect(url_for("internships"))
-
-    already_applied = False
-    if session.get("user_id"):
-        already_applied = (
-            Application.query.filter_by(
-                user_id=session["user_id"],
-                internship_id=internship.id,
-            ).first()
-            is not None
-        )
-
-    domain = "General"
-    if internship.description and internship.description.startswith("Domain:"):
-        domain = internship.description.split(".", 1)[0].replace("Domain:", "").strip()
-
-    return render_template(
-        "internship_detail.html",
-        internship=internship,
-        already_applied=already_applied,
-        domain=domain,
-    )
+    return _prep_redirect()
 
 
 @app.route("/internship/<int:internship_id>/apply", methods=["POST"])
 @login_required
 def apply_internship(internship_id):
-    user = get_current_user()
-    if user is None:
-        return redirect(url_for("login"))
-
-    internship = db.session.get(Internship, internship_id)
-    if internship is None:
-        flash("That internship was not found.", "error")
-        return redirect(url_for("internships"))
-
-    existing = Application.query.filter_by(
-        user_id=user.id,
-        internship_id=internship.id,
-    ).first()
-    if existing:
-        flash("Already Applied", "error")
-        return redirect(url_for("internship_detail", internship_id=internship.id))
-
-    application = Application(
-        user_id=user.id,
-        internship_id=internship.id,
-        status="Applied",
-    )
-    db.session.add(application)
-    try:
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
-        flash("Already Applied", "error")
-        return redirect(url_for("internship_detail", internship_id=internship.id))
-
-    flash("Application submitted.", "success")
-    return redirect(url_for("my_applications"))
+    return _prep_redirect()
 
 
 @app.route("/applications")
 @login_required
 def my_applications():
-    user = get_current_user()
-    if user is None:
-        return redirect(url_for("login"))
-
-    applications = (
-        Application.query.filter_by(user_id=user.id)
-        .order_by(Application.applied_date.desc())
-        .all()
-    )
-    cards = []
-    for item in applications:
-        timeline = application_timeline(item.status)
-        cards.append({"application": item, "timeline": timeline})
-
-    return render_template(
-        "applications.html",
-        user=user,
-        applications=cards,
-        statuses=APPLICATION_STATUSES,
-    )
+    return redirect(url_for("progress"))
 
 
 @app.route("/applications/<int:application_id>/status", methods=["POST"])
 @login_required
 def update_application_status(application_id):
-    user = get_current_user()
-    if user is None:
-        return redirect(url_for("login"))
-
-    application = db.session.get(Application, application_id)
-    if application is None:
-        flash("That application was not found.", "error")
-        return redirect(url_for("my_applications"))
-    if application.user_id != user.id:
-        abort(403)
-
-    new_status = request.form.get("status", "").strip()
-    if new_status not in APPLICATION_STATUSES:
-        flash("Please choose a valid application status.", "error")
-        return redirect(url_for("my_applications"))
-
-    application.status = new_status
-    db.session.commit()
-    flash("Application status updated.", "success")
-    return redirect(url_for("my_applications"))
+    return redirect(url_for("progress"))
 
 
 @app.route("/resume-analyzer", methods=["GET", "POST"])
@@ -619,7 +455,12 @@ def resume_analyzer():
                 request.files.get("resume_file"),
                 request.form.get("resume_text", ""),
             )
-            result = analyze_resume(resume_text, user.skills, user.preferred_domain)
+            result = analyze_resume(
+                resume_text,
+                user.skills,
+                user.preferred_domain,
+                user_target_role(user),
+            )
             extracted = [
                 skill
                 for skill in result.get("found_skills", [])
@@ -627,6 +468,8 @@ def resume_analyzer():
             ]
             session["resume_analyzed"] = True
             session["resume_skills"] = ", ".join(extracted)
+            user.last_resume_text = resume_text
+            user.resume_analyzed_count = (user.resume_analyzed_count or 0) + 1
             if extracted:
                 merged = []
                 seen = set()
@@ -637,7 +480,7 @@ def resume_analyzer():
                         seen.add(key)
                         merged.append(clean)
                 user.skills = ", ".join(merged)
-                db.session.commit()
+            db.session.commit()
             flash("Resume uploaded and analyzed. Skills were extracted.", "success")
         except ValueError as error:
             flash(str(error), "error")
@@ -645,25 +488,88 @@ def resume_analyzer():
     return render_template("resume_analyzer.html", user=user, result=result)
 
 
-@app.route("/career-roadmap", methods=["GET", "POST"])
+@app.route("/resume-fixer")
 @login_required
-def career_roadmap():
+def resume_fixer():
     user = get_current_user()
     if user is None:
         return redirect(url_for("login"))
 
-    domain = user.preferred_domain
-    if request.method == "POST":
-        domain = request.form.get("domain", domain)
-
-    selected, steps = build_roadmap(domain, user.skills)
-    return render_template(
-        "career_roadmap.html",
-        user=user,
-        selected=selected,
-        steps=steps,
-        domains=DOMAINS,
+    resume_text = stored_resume_text(user)
+    plan = build_resume_fix(
+        user,
+        resume_text,
+        resume_analyzed=bool(session.get("resume_analyzed") or resume_text),
     )
+    return render_template("resume_fixer.html", user=user, plan=plan)
+
+
+@app.route("/resume-fixer/pdf", methods=["GET", "POST"])
+@login_required
+def resume_fixer_pdf():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+
+    resume_text = stored_resume_text(user)
+    if not resume_text:
+        return (
+            "No resume text found. Analyze or upload your resume first so the PDF "
+            "can be rebuilt from YOUR content.",
+            400,
+        )
+
+    plan = build_resume_fix(
+        user,
+        resume_text,
+        resume_analyzed=True,
+    )
+    pdf_bytes = render_resume_pdf(plan["document"])
+    buffer = BytesIO(pdf_bytes)
+    buffer.seek(0)
+    return send_file(
+        buffer,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=plan["filename"],
+    )
+
+
+@app.route("/career-roadmap", methods=["GET", "POST"])
+@login_required
+def career_roadmap():
+    return redirect(url_for("preparation_plan"))
+
+
+@app.route("/preparation-plan")
+@login_required
+def preparation_plan():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    student = student_match_payload(user)
+    target = user_target_role(user)
+    attempts = (
+        ExamAttempt.query.filter_by(user_id=user.id)
+        .order_by(ExamAttempt.created_at.desc())
+        .all()
+    )
+    plan = build_preparation_plan(student["skills"], target, attempts)
+    return render_template("preparation_plan.html", user=user, plan=plan)
+
+
+@app.route("/progress")
+@login_required
+def progress():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    attempts = (
+        ExamAttempt.query.filter_by(user_id=user.id)
+        .order_by(ExamAttempt.created_at.asc())
+        .all()
+    )
+    return render_template("progress.html", user=user, attempts=attempts)
 
 
 @app.route("/scam-detector", methods=["GET", "POST"])
@@ -684,6 +590,7 @@ def scam_detector():
     return render_template("scam_detector.html", user=user, result=result)
 
 
+@app.route("/examiner", methods=["GET", "POST"])
 @app.route("/interview-arena", methods=["GET", "POST"])
 @login_required
 def interview_arena():
@@ -691,7 +598,9 @@ def interview_arena():
     if user is None:
         return redirect(url_for("login"))
 
-    selected = session.get("arena_domain") or user.preferred_domain
+    role_name = user_target_role(user)
+    default_domain = get_role_spec(role_name)["exam_domain"]
+    selected = session.get("arena_domain") or default_domain
     current_question = None
     question_number = 0
     total_questions = 5
@@ -701,16 +610,19 @@ def interview_arena():
     rank = None
     finished = False
     progress = 0
+    mistakes = []
+    topic_scores = {}
 
     if request.method == "POST":
         action = request.form.get("action")
         if action == "start":
-            selected = request.form.get("domain", selected)
+            selected = request.form.get("domain", selected) or default_domain
             selected, question_list = get_interview_questions(selected)
             session["arena_domain"] = selected
             session["arena_index"] = 0
             session["arena_results"] = []
             session.pop("arena_feedback", None)
+            session.pop("exam_saved", None)
         elif action == "answer":
             selected = session.get("arena_domain", selected)
             selected, question_list = get_interview_questions(selected)
@@ -728,7 +640,8 @@ def interview_arena():
             session.pop("arena_index", None)
             session.pop("arena_results", None)
             session.pop("arena_feedback", None)
-            selected = user.preferred_domain
+            session.pop("exam_saved", None)
+            selected = default_domain
 
     if session.get("arena_domain"):
         selected, question_list = get_interview_questions(session["arena_domain"])
@@ -742,6 +655,19 @@ def interview_arena():
             average = round(sum(item["score"] for item in report) / len(report)) if report else 0
             rank = get_interview_rank(average)
             progress = 100
+            mistakes = analyze_exam_mistakes(report)
+            topic_scores = topic_scores_from_results(report)
+            if report and not session.get("exam_saved"):
+                attempt = ExamAttempt(
+                    user_id=user.id,
+                    target_role=role_name,
+                    overall_score=average,
+                    topic_scores=json.dumps(topic_scores),
+                    mistakes=json.dumps(mistakes),
+                )
+                db.session.add(attempt)
+                db.session.commit()
+                session["exam_saved"] = True
         else:
             current_question = question_list[index]
             question_number = index + 1
@@ -763,6 +689,9 @@ def interview_arena():
         finished=finished,
         progress=progress,
         domains=DOMAINS,
+        mistakes=mistakes,
+        topic_scores=topic_scores,
+        target=role_name,
     )
 
 
@@ -775,7 +704,7 @@ def video_interview():
     return render_template(
         "video_interview.html",
         user=user,
-        selected=user.preferred_domain,
+        selected=get_role_spec(user_target_role(user))["exam_domain"],
         domains=DOMAINS,
     )
 
@@ -894,9 +823,10 @@ def server_error(_error):
 
 # Create the database folder and tables when the app starts
 with app.app_context():
-    os.makedirs(db_folder, exist_ok=True)
+    os.makedirs(DB_FOLDER, exist_ok=True)
     db.create_all()
     ensure_admin_schema()
+    ensure_prep_schema()
     ensure_admin_user()
     ensure_demo_student()
     ensure_sample_internships()

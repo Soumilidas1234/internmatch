@@ -3,32 +3,11 @@
 from functools import wraps
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
-from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash
 
-from models import Application, Internship, User, db
+from models import ExamAttempt, User, db
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-ADMIN_STATUSES = (
-    "Pending",
-    "Applied",
-    "Shortlisted",
-    "Interview",
-    "Selected",
-    "Accepted",
-    "Rejected",
-)
-WORK_MODES = ("Remote", "Hybrid", "On-site")
-INTERNSHIP_FIELDS = (
-    "company",
-    "title",
-    "description",
-    "required_skills",
-    "location",
-    "work_mode",
-    "duration",
-    "stipend",
-)
 
 
 def is_admin_user(user):
@@ -65,10 +44,9 @@ def current_admin():
     return user
 
 
-def internship_form_data():
-    data = {field: request.form.get(field, "").strip() for field in INTERNSHIP_FIELDS}
-    missing = [field.replace("_", " ") for field, value in data.items() if not value]
-    return data, missing
+def _prep_admin_redirect():
+    flash("Internship management is disabled. Use analytics and student records.", "success")
+    return redirect(url_for("admin.dashboard"))
 
 
 def ensure_admin_schema():
@@ -109,25 +87,75 @@ def login():
 @admin_required
 def dashboard():
     admin = current_admin()
-    pending_statuses = ("Pending", "Applied")
-    accepted_statuses = ("Accepted", "Selected")
+    students = User.query.filter_by(is_admin=False).all()
+    attempts = ExamAttempt.query.order_by(ExamAttempt.created_at.desc()).all()
+    role_counts = {}
+    gap_counts = {}
+    mistake_counts = {}
+    readiness_scores = []
 
-    stats = {
-        "students": User.query.filter_by(is_admin=False).count(),
-        "internships": Internship.query.count(),
-        "applications": Application.query.count(),
-        "pending": Application.query.filter(Application.status.in_(pending_statuses)).count(),
-        "accepted": Application.query.filter(Application.status.in_(accepted_statuses)).count(),
-        "rejected": Application.query.filter_by(status="Rejected").count(),
-    }
-    recent_applications = (
-        Application.query.order_by(Application.applied_date.desc()).limit(5).all()
+    from ml.prep import interview_readiness, role_readiness_for, split_known_missing, user_target_role
+    from ml.profile_strength import compute_profile_strength
+    from ml.recommender import student_has_skills
+
+    latest_by_user = {}
+    for attempt in attempts:
+        latest_by_user.setdefault(attempt.user_id, attempt)
+
+    for student in students:
+        role = user_target_role(student)
+        role_counts[role] = role_counts.get(role, 0) + 1
+        _have, missing, _req = split_known_missing(student.skills or "", role)
+        for skill in missing:
+            gap_counts[skill] = gap_counts.get(skill, 0) + 1
+        payload = {
+            "skills": student.skills or "",
+            "education": student.education or "",
+            "preferred_domain": role,
+            "preferred_work_mode": student.preferred_work_mode or "",
+            "location": student.location or "",
+            "target_role": role,
+        }
+        match = role_readiness_for(payload, role) if student_has_skills(payload) else {}
+        profile = compute_profile_strength(
+            student,
+            resume_analyzed=bool(student.resume_analyzed_count),
+        )
+        readiness_scores.append(
+            interview_readiness(profile["score"], match, latest_by_user.get(student.id))["score"]
+        )
+
+    for attempt in attempts:
+        for item in attempt.mistake_list():
+            topic = item.get("topic") or "General"
+            mistake_counts[topic] = mistake_counts.get(topic, 0) + int(item.get("mistakes") or 0)
+
+    avg_exam = (
+        round(sum(item.overall_score or 0 for item in attempts) / len(attempts))
+        if attempts
+        else None
     )
+    avg_readiness = (
+        round(sum(readiness_scores) / len(readiness_scores)) if readiness_scores else None
+    )
+    resume_total = sum(student.resume_analyzed_count or 0 for student in students)
+    stats = {
+        "students": len(students),
+        "exams": len(attempts),
+        "resume_analyses": resume_total,
+        "avg_exam": avg_exam,
+        "avg_readiness": avg_readiness,
+        "top_role": max(role_counts, key=role_counts.get) if role_counts else "—",
+        "top_gap": max(gap_counts, key=gap_counts.get) if gap_counts else "—",
+        "top_mistake": max(mistake_counts, key=mistake_counts.get) if mistake_counts else "—",
+    }
     return render_template(
         "admin/dashboard.html",
         admin=admin,
         stats=stats,
-        recent_applications=recent_applications,
+        role_counts=sorted(role_counts.items(), key=lambda item: -item[1])[:8],
+        gap_counts=sorted(gap_counts.items(), key=lambda item: -item[1])[:8],
+        mistake_counts=sorted(mistake_counts.items(), key=lambda item: -item[1])[:8],
         active_page="dashboard",
     )
 
@@ -150,152 +178,34 @@ def students():
 @admin_bp.route("/internships")
 @admin_required
 def internships():
-    admin = current_admin()
-    internships = Internship.query.order_by(Internship.company, Internship.title).all()
-    return render_template(
-        "admin/internships.html",
-        admin=admin,
-        internships=internships,
-        active_page="internships",
-    )
+    return _prep_admin_redirect()
 
 
 @admin_bp.route("/internships/new", methods=["GET", "POST"])
 @admin_required
 def add_internship():
-    admin = current_admin()
-    if request.method == "POST":
-        data, missing = internship_form_data()
-        if missing:
-            flash("Please fill in all internship fields.", "error")
-            return render_template(
-                "admin/internship_form.html",
-                admin=admin,
-                internship=data,
-                work_modes=WORK_MODES,
-                form_title="Add internship",
-                active_page="internships",
-            )
-
-        internship = Internship(**data)
-        db.session.add(internship)
-        db.session.commit()
-        flash("Internship added.", "success")
-        return redirect(url_for("admin.internships"))
-
-    empty = {field: "" for field in INTERNSHIP_FIELDS}
-    return render_template(
-        "admin/internship_form.html",
-        admin=admin,
-        internship=empty,
-        work_modes=WORK_MODES,
-        form_title="Add internship",
-        active_page="internships",
-    )
+    return _prep_admin_redirect()
 
 
 @admin_bp.route("/internships/<int:internship_id>/edit", methods=["GET", "POST"])
 @admin_required
 def edit_internship(internship_id):
-    admin = current_admin()
-    internship = db.session.get(Internship, internship_id)
-    if internship is None:
-        flash("That internship was not found.", "error")
-        return redirect(url_for("admin.internships"))
-
-    if request.method == "POST":
-        data, missing = internship_form_data()
-        if missing:
-            flash("Please fill in all internship fields.", "error")
-            return render_template(
-                "admin/internship_form.html",
-                admin=admin,
-                internship=data,
-                internship_id=internship.id,
-                work_modes=WORK_MODES,
-                form_title="Edit internship",
-                active_page="internships",
-            )
-
-        for field, value in data.items():
-            setattr(internship, field, value)
-        db.session.commit()
-        flash("Internship updated.", "success")
-        return redirect(url_for("admin.internships"))
-
-    return render_template(
-        "admin/internship_form.html",
-        admin=admin,
-        internship=internship,
-        internship_id=internship.id,
-        work_modes=WORK_MODES,
-        form_title="Edit internship",
-        active_page="internships",
-    )
+    return _prep_admin_redirect()
 
 
 @admin_bp.route("/internships/<int:internship_id>/delete", methods=["GET", "POST"])
 @admin_required
 def delete_internship(internship_id):
-    admin = current_admin()
-    internship = db.session.get(Internship, internship_id)
-    if internship is None:
-        flash("That internship was not found.", "error")
-        return redirect(url_for("admin.internships"))
-
-    related = Application.query.filter_by(internship_id=internship.id).count()
-    if request.method == "POST":
-        Application.query.filter_by(internship_id=internship.id).delete()
-        db.session.delete(internship)
-        db.session.commit()
-        flash("Internship deleted.", "success")
-        return redirect(url_for("admin.internships"))
-
-    return render_template(
-        "admin/internship_delete.html",
-        admin=admin,
-        internship=internship,
-        related=related,
-        active_page="internships",
-    )
+    return _prep_admin_redirect()
 
 
 @admin_bp.route("/applications")
 @admin_required
 def applications():
-    admin = current_admin()
-    applications = (
-        Application.query.order_by(Application.applied_date.desc()).all()
-    )
-    return render_template(
-        "admin/applications.html",
-        admin=admin,
-        applications=applications,
-        statuses=ADMIN_STATUSES,
-        active_page="applications",
-    )
+    return _prep_admin_redirect()
 
 
 @admin_bp.route("/applications/<int:application_id>/status", methods=["POST"])
 @admin_required
 def update_application_status(application_id):
-    application = db.session.get(Application, application_id)
-    if application is None:
-        flash("That application was not found.", "error")
-        return redirect(url_for("admin.applications"))
-
-    new_status = request.form.get("status", "").strip()
-    if new_status not in ADMIN_STATUSES:
-        flash("Please choose a valid application status.", "error")
-        return redirect(url_for("admin.applications"))
-
-    application.status = new_status
-    try:
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
-        flash("Could not update that application.", "error")
-        return redirect(url_for("admin.applications"))
-
-    flash("Application status updated.", "success")
-    return redirect(url_for("admin.applications"))
+    return _prep_admin_redirect()

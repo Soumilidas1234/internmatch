@@ -51,6 +51,7 @@ def ensure_demo_student():
         "cgpa": 8.2,
         "location": "Bengaluru",
         "preferred_domain": "Web Development",
+        "target_role": "Web Developer",
         "preferred_work_mode": "Hybrid",
         "skills": "Python, HTML, CSS, JavaScript, Flask, SQL, Git",
         "is_admin": False,
@@ -68,6 +69,21 @@ def ensure_demo_student():
         **profile,
     )
     db.session.add(student)
+    db.session.commit()
+
+
+def ensure_prep_schema():
+    """Add preparation columns without wiping existing users."""
+    columns = db.session.execute(db.text("PRAGMA table_info(users)")).fetchall()
+    names = {row[1] for row in columns}
+    if "target_role" not in names:
+        db.session.execute(db.text("ALTER TABLE users ADD COLUMN target_role VARCHAR(120)"))
+    if "resume_analyzed_count" not in names:
+        db.session.execute(
+            db.text("ALTER TABLE users ADD COLUMN resume_analyzed_count INTEGER NOT NULL DEFAULT 0")
+        )
+    if "last_resume_text" not in names:
+        db.session.execute(db.text("ALTER TABLE users ADD COLUMN last_resume_text TEXT"))
     db.session.commit()
 
 

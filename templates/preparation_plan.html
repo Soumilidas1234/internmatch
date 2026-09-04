@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preparation Plan | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Personalized Plan</p>
+                    <h1>Your 14-day plan for {{ plan.role }}</h1>
+                    <p class="auth-subtitle">Generated from your skills, gaps, and recent exam mistakes. Practice here, then apply on company sites.</p>
+                </div>
+            </section>
+            <section class="result-grid">
+                {% for step in plan.plan %}
+                <article class="intern-card">
+                    <p class="preview-label">{{ step.days }}</p>
+                    <h3>{{ step.focus }}</h3>
+                </article>
+                {% endfor %}
+            </section>
+            {% if plan.weak_topics %}
+            <p class="auth-subtitle">Prioritized from exam mistakes: {{ plan.weak_topics|join(', ') }}</p>
+            {% endif %}
+            <a class="btn" href="{{ url_for('interview_arena') }}">Start AI Exam</a>
+        </div>
+    </main>
+</body>
+</html>

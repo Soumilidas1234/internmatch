@@ -93,10 +93,10 @@ INTERVIEW_BANK = {
 
 PROJECT_CATALOG = [
     {"title": "Student Internship Portal", "domain": "Web Development", "level": "Intermediate", "skills": ["HTML", "CSS", "Python", "Flask", "SQLite"], "why": "Shows full-stack thinking and is perfect for BCA."},
-    {"title": "Personal Portfolio Website", "domain": "Web Development", "level": "Beginner", "skills": ["HTML", "CSS", "JavaScript"], "why": "A must-have when applying to internships."},
+    {"title": "Personal Portfolio Website", "domain": "Web Development", "level": "Beginner", "skills": ["HTML", "CSS", "JavaScript"], "why": "A must-have when you start interview conversations."},
     {"title": "Campus Event Dashboard", "domain": "Data Analysis", "level": "Beginner", "skills": ["Excel", "Python"], "why": "Proves you can clean data and present insights."},
     {"title": "Placement Statistics Analyzer", "domain": "Data Analysis", "level": "Intermediate", "skills": ["Python", "Pandas", "SQL"], "why": "Looks practical and college-relevant."},
-    {"title": "Internship App Redesign", "domain": "UI/UX Design", "level": "Beginner", "skills": ["Figma", "UI", "UX"], "why": "A strong case study for design internships."},
+    {"title": "Internship App Redesign", "domain": "UI/UX Design", "level": "Beginner", "skills": ["Figma", "UI", "UX"], "why": "A strong case study for design interviews."},
     {"title": "Student Attendance Mobile App", "domain": "Android Development", "level": "Intermediate", "skills": ["Java", "Kotlin", "SQLite"], "why": "Shows UI plus local storage skills."},
     {"title": "Internship Scam Awareness Page", "domain": "Cybersecurity", "level": "Beginner", "skills": ["HTML", "CSS", "Communication"], "why": "Combines security awareness with a useful student topic."},
     {"title": "Resume Keyword Checker", "domain": "Web Development", "level": "Intermediate", "skills": ["Python", "Flask", "HTML"], "why": "Connects directly to InternMatch AI and your resume tool."},
@@ -164,14 +164,18 @@ def choose_domain(text, fallback="Web Development"):
     return fallback if fallback in CAREER_ROADMAPS else "Web Development"
 
 
-def analyze_resume(resume_text, profile_skills="", preferred_domain=""):
+def analyze_resume(resume_text, profile_skills="", preferred_domain="", target_role=""):
     text = (resume_text or "").strip()
     found_skills = find_skills(text + " " + profile_skills)
-    domain = choose_domain(text + " " + preferred_domain, preferred_domain)
+    domain = choose_domain(text + " " + preferred_domain + " " + (target_role or ""), preferred_domain)
     roadmap = CAREER_ROADMAPS.get(domain, CAREER_ROADMAPS["Web Development"])
     needed = []
     for step in roadmap:
         needed.extend(step["skills"])
+    if target_role:
+        from ml.roles import RoleTarget, resolve_role_name
+
+        needed.extend(RoleTarget(resolve_role_name(target_role)).skills)
 
     missing = []
     found_lower = [item.lower() for item in found_skills]
@@ -200,15 +204,33 @@ def analyze_resume(resume_text, profile_skills="", preferred_domain=""):
     if len(text) < 200:
         suggestions.append("Your resume text looks short. Add education, skills, and projects.")
     if not suggestions:
-        suggestions.append("Strong start. Tailor the top skills to each internship you apply for.")
+        suggestions.append("Strong start. Keep practicing with the AI examiner before real interviews.")
+
+    education_hits = []
+    for token in ["bca", "b.sc", "bsc", "mca", "b.tech", "bachelor", "degree", "university", "college"]:
+        if token in text.lower():
+            education_hits.append(token)
+    experience_hits = []
+    for token in ["intern", "internship", "experience", "worked", "project intern"]:
+        if token in text.lower():
+            experience_hits.append(token)
+    project_hits = "project" in text.lower() or "github" in text.lower()
+
+    strengths = found_skills[:6] if found_skills else []
+    weak = missing[:6]
 
     return {
         "score": score,
         "domain": domain,
         "found_skills": found_skills or ["No clear technical skills detected"],
-        "missing_skills": missing[:6] or ["No major gaps for a beginner profile"],
+        "missing_skills": missing[:6] or ["No major gaps detected from the target-role skill list"],
         "suggestions": suggestions,
         "word_count": len(text.split()),
+        "education_found": bool(education_hits) or "education" in text.lower(),
+        "experience_found": bool(experience_hits),
+        "projects_found": bool(project_hits),
+        "strengths": strengths,
+        "weak_areas": weak,
     }
 
 
@@ -309,7 +331,27 @@ def score_one_answer(item, answer):
         "tip": tip,
         "model": item.get("model", ""),
         "hits": hits,
+        "keywords": item.get("keywords", []),
+        "topic": item.get("topic") or _topic_from_keywords(item.get("keywords", [])),
     }
+
+
+def _topic_from_keywords(keywords):
+    blob = " ".join(keywords).lower()
+    if "sql" in blob or "join" in blob or "query" in blob:
+        return "SQL"
+    if "python" in blob or "pandas" in blob:
+        return "Python"
+    if "html" in blob or "css" in blob or "javascript" in blob:
+        return "Web"
+    if "stat" in blob or "probability" in blob:
+        return "Statistics"
+    if "excel" in blob or "dashboard" in blob:
+        return "Excel"
+    if "interview" in blob or "star" in blob or "example" in blob:
+        return "Interview"
+    return "Technical"
+
 
 
 def score_interview(domain, answers):

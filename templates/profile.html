@@ -14,7 +14,7 @@
                 <div>
                     <p class="badge">Student Profile</p>
                     <h1>Complete your profile</h1>
-                    <p class="auth-subtitle">Keep your details up to date so internship matches stay accurate.</p>
+                    <p class="auth-subtitle">Keep your details current so role readiness stays accurate. This platform prepares you; it does not process job applications.</p>
                 </div>
             </section>
             <section class="auth-card">
@@ -41,8 +41,12 @@
                             <input type="text" id="location" name="location" value="{{ user.location or '' }}" required>
                         </div>
                         <div class="form-group">
-                            <label for="preferred_domain">Preferred internship domain</label>
-                            <input type="text" id="preferred_domain" name="preferred_domain" value="{{ user.preferred_domain or '' }}" required>
+                            <label for="target_role">Target role</label>
+                            <select id="target_role" name="target_role" required>
+                                {% for role in roles %}
+                                <option value="{{ role }}" {% if (user.target_role or user.preferred_domain) == role %}selected{% endif %}>{{ role }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="preferred_work_mode">Preferred work mode</label>

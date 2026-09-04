@@ -16,8 +16,9 @@
                     <th>Email</th>
                     <th>Education</th>
                     <th>CGPA</th>
-                    <th>Preferred Domain</th>
+                    <th>Target Role</th>
                     <th>Work Mode</th>
+                    <th>Resume analyses</th>
                     <th>Skills</th>
                 </tr>
             </thead>
@@ -28,8 +29,9 @@
                     <td>{{ student.email }}</td>
                     <td>{{ student.education or '-' }}</td>
                     <td>{{ student.cgpa if student.cgpa is not none else '-' }}</td>
-                    <td>{{ student.preferred_domain or '-' }}</td>
+                    <td>{{ student.target_role or student.preferred_domain or '-' }}</td>
                     <td>{{ student.preferred_work_mode or '-' }}</td>
+                    <td>{{ student.resume_analyzed_count or 0 }}</td>
                     <td>{{ student.skills or '-' }}</td>
                 </tr>
                 {% endfor %}

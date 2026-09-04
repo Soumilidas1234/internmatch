@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Progress | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Retry and improve</p>
+                    <h1>Exam progress</h1>
+                    <p class="auth-subtitle">Test → find mistakes → learn → retest. Scores are practice estimates only.</p>
+                </div>
+            </section>
+            {% if attempts %}
+            <section class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Attempt</th>
+                            <th>Role</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in attempts %}
+                        <tr>
+                            <td>Attempt {{ loop.index }}</td>
+                            <td>{{ item.target_role }}</td>
+                            <td>{{ item.overall_score }}%</td>
+                            <td>{{ item.created_at.strftime('%d %b %Y %H:%M') if item.created_at else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+            {% set latest = attempts[-1] %}
+            {% if latest.mistake_list() %}
+            <section class="intern-grid">
+                {% for item in latest.mistake_list() %}
+                <article class="intern-card mistake-card">
+                    <h3>{{ item.topic }}</h3>
+                    <p>{{ item.mistakes }} mistake{{ '' if item.mistakes == 1 else 's' }}</p>
+                    <p>Common problem: {{ item.problem }}</p>
+                    <p><strong>How to improve:</strong> {{ item.how }}</p>
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
+            {% else %}
+            <section class="empty-state">
+                <h2>No exams yet</h2>
+                <a class="btn" href="{{ url_for('interview_arena') }}">Start AI Exam</a>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

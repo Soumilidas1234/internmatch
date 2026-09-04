@@ -13,9 +13,9 @@
         <div class="container">
             <section class="dashboard-header">
                 <div>
-                    <p class="badge">AI Interview Arena</p>
-                    <h1>Face the AI Interviewer</h1>
-                    <p class="auth-subtitle">5 live rounds. Answer one question at a time and get instant AI coach feedback.</p>
+                    <p class="badge">AI Examiner</p>
+                    <h1>Test your target role</h1>
+                    <p class="auth-subtitle">Practice questions for {{ target }}. Scores are for learning, not a hiring decision.</p>
                 </div>
             </section>
 
@@ -23,18 +23,18 @@
             <section class="arena-stage">
                 <p class="preview-label">Choose your track</p>
                 <h2>Enter the arena</h2>
-                <p class="auth-subtitle">The AI interviewer will ask 5 internship questions based on your domain.</p>
+                <p class="auth-subtitle">Questions follow your target role. After the exam you will see mistakes and a retry path.</p>
                 <form method="POST">
                     <input type="hidden" name="action" value="start">
                     <div class="form-group">
-                        <label for="domain">Interview track</label>
+                        <label for="domain">Exam track</label>
                         <select id="domain" name="domain">
                             {% for domain in domains %}
                                 <option value="{{ domain }}" {% if domain == selected %}selected{% endif %}>{{ domain }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <button class="btn btn-pulse" type="submit">Start Interview</button>
+                    <button class="btn btn-pulse" type="submit">Start AI Exam</button>
                 </form>
                 <p class="auth-switch"><a href="{{ url_for('video_interview') }}">Join AI Video Call Interview instead</a></p>
             </section>
@@ -56,7 +56,7 @@
                     <input type="hidden" name="action" value="answer">
                     <div class="form-group">
                         <label for="answer">Your answer</label>
-                        <textarea id="answer" name="answer" rows="5" placeholder="Speak like you are in a real internship interview..." required></textarea>
+                        <textarea id="answer" name="answer" rows="5" placeholder="Answer as if you are in a real interview..." required></textarea>
                     </div>
                     <button class="btn" type="submit">Submit to AI Coach</button>
                 </form>
@@ -80,15 +80,38 @@
 
             {% if finished %}
             <section class="arena-stage">
-                <p class="badge">Arena Complete</p>
-                <h2>{{ rank }}</h2>
-                <p class="big-score">{{ average }}/100</p>
-                <p class="auth-subtitle">You finished the {{ selected }} interview round.</p>
-                <form method="POST">
-                    <input type="hidden" name="action" value="restart">
-                    <button class="btn" type="submit">Play Again</button>
-                </form>
+                <p class="badge">Exam complete</p>
+                <h2>Overall score: {{ average }}%</h2>
+                <p class="auth-subtitle">{{ rank }} · {{ selected }} track for {{ target }}</p>
+                {% if topic_scores %}
+                <p>
+                    {% for topic, score in topic_scores.items() %}
+                    {{ topic }}: {{ score }}%{% if not loop.last %} · {% endif %}
+                    {% endfor %}
+                </p>
+                {% endif %}
+                <div class="header-actions">
+                    <a class="btn" href="{{ url_for('progress') }}">Review My Mistakes</a>
+                    <a class="btn" href="{{ url_for('skill_gap') }}">Practice Weak Areas</a>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="restart">
+                        <button class="btn" type="submit">Retake Exam</button>
+                    </form>
+                    <a class="btn btn-outline" href="{{ url_for('video_interview') }}">Start Mock Interview</a>
+                </div>
             </section>
+            {% if mistakes %}
+            <section class="intern-grid">
+                {% for item in mistakes %}
+                <article class="intern-card mistake-card">
+                    <h3>{{ item.topic }}</h3>
+                    <p>{{ item.mistakes }} mistake{{ '' if item.mistakes == 1 else 's' }}</p>
+                    <p>Common problem: {{ item.problem }}</p>
+                    <p><strong>How to improve:</strong> {{ item.how }}</p>
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
 
             <section class="result-grid">
                 {% for item in report %}

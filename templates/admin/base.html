@@ -11,10 +11,8 @@
         <aside class="admin-sidebar">
             <a class="logo admin-logo" href="{{ url_for('admin.dashboard') }}">InternMatch <span>Admin</span></a>
             <nav>
-                <a class="{% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
-                <a class="{% if active_page == 'students' %}active{% endif %}" href="{{ url_for('admin.students') }}">Students</a>
-                <a class="{% if active_page == 'internships' %}active{% endif %}" href="{{ url_for('admin.internships') }}">Internships</a>
-                <a class="{% if active_page == 'applications' %}active{% endif %}" href="{{ url_for('admin.applications') }}">Applications</a>
+                <a class="{% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">Analytics</a>
+                <a class="{% if active_page == 'students' %}active{% endif %}" href="{{ url_for('admin.students') }}">User Management</a>
             </nav>
             <div class="admin-sidebar-foot">
                 <p>{{ admin.name }}</p>
@@ -24,7 +22,7 @@
         <div class="admin-main">
             <header class="admin-topbar">
                 <h1>{% block heading %}Admin{% endblock %}</h1>
-                <p>Local InternMatch AI control panel. Internship records are sample demo data.</p>
+                <p>Local InternMatch AI analytics. Counts come from the database, not sample marketing numbers.</p>
             </header>
             <div class="admin-content">
                 {% with messages = get_flashed_messages(with_categories=true) %}

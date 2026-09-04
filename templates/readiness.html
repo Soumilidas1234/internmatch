@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Readiness | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Perfect Match</p>
+                    <h1>Career / role readiness</h1>
+                    <p class="auth-subtitle">How well does your current profile match your target role? This is an estimate, not a hiring guarantee.</p>
+                </div>
+            </section>
+
+            <section class="auth-card">
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="target_role">Target role</label>
+                        <select id="target_role" name="target_role">
+                            {% for role in roles %}
+                            <option value="{{ role }}" {% if role == target %}selected{% endif %}>{{ role }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="custom_role">Or enter a custom target role</label>
+                        <input type="text" id="custom_role" name="custom_role" placeholder="Example: Data Analyst intern at a product company">
+                    </div>
+                    <button class="btn" type="submit">Update target role</button>
+                </form>
+            </section>
+
+            {% if need_skills %}
+            <section class="empty-state">
+                <h2>Add skills first</h2>
+                <p class="auth-subtitle">Analyze your resume or add skills on your profile.</p>
+                <a class="btn" href="{{ url_for('resume_analyzer') }}">Analyze My Resume</a>
+            </section>
+            {% elif match %}
+            <section class="strength-panel">
+                <div class="strength-meter">
+                    <p class="preview-label">Target role</p>
+                    <h2>{{ target }}</h2>
+                    <div class="strength-score">
+                        <strong>{{ match.readiness }}%</strong>
+                        <span>Role readiness · {{ match.label }}</span>
+                    </div>
+                    <div class="strength-bar"><span style="width: {{ match.readiness }}%;"></span></div>
+                    <p class="match-note">Why this score: {{ match.why }}</p>
+                    <p class="score-breakdown">
+                        Skills {{ match.skill_score }}% · Text {{ match.text_similarity_score }}% ·
+                        Neural {{ match.neural_score }}% · Domain {{ 'Yes' if match.domain_match else 'No' }}
+                    </p>
+                </div>
+                <div>
+                    <h3>You are strong in</h3>
+                    {% for skill in have %}
+                    <span class="skill-ok">✓ {{ skill }}</span>
+                    {% else %}<p>Add more resume skills to see strengths.</p>{% endfor %}
+                    <h3>You need to improve</h3>
+                    {% for skill in missing %}
+                    <span class="skill-missing">⚠ {{ skill }}</span>
+                    {% else %}<p>No major missing skills for this role list.</p>{% endfor %}
+                    <a class="btn" href="{{ url_for('skill_gap') }}">Open skill gap</a>
+                </div>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

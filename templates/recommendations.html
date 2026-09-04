@@ -15,7 +15,7 @@
                 <div>
                     <p class="badge">AI Matching</p>
                     <h1>Your best internship matches</h1>
-                    <p class="auth-subtitle">Scores are based on skills, resume/profile text, domain, location, work mode, and education. This does not guarantee selection.</p>
+                    <p class="auth-subtitle">Scores combine skill overlap, TF-IDF cosine similarity, a local neural network, domain, location, work mode, and education. This does not guarantee selection.</p>
                 </div>
             </section>
 
@@ -68,6 +68,7 @@
                     <p class="match-note">Why this matches: {{ item.why }}</p>
                     <p class="score-breakdown">
                         Skills {{ item.skill_score }}% · Text {{ item.text_similarity_score }}% ·
+                        Neural {{ item.neural_score }}% ·
                         Domain {{ 'Yes' if item.domain_match else 'No' }} ·
                         Location/Mode {{ 'Yes' if item.location_work_mode_match else 'No' }} ·
                         Education {{ 'Yes' if item.education_match else 'No' }}

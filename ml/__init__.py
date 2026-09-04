@@ -1,1 +1,1 @@
-# Internship matching package for InternMatch AI.
+# Local matching and preparation helpers for InternMatch AI.

@@ -14,7 +14,7 @@
             <section class="auth-card">
                 <p class="badge">Create Account</p>
                 <h1>Student Registration</h1>
-                <p class="auth-subtitle">Fill in your details to join InternMatch AI.</p>
+                <p class="auth-subtitle">Create a profile and choose a target role to start interview preparation.</p>
 
                 <form method="POST" action="{{ url_for('register') }}">
                     <div class="form-grid">
@@ -43,8 +43,13 @@
                             <input type="text" id="location" name="location" value="{{ form.get('location', '') }}" required>
                         </div>
                         <div class="form-group">
-                            <label for="preferred_domain">Preferred internship domain</label>
-                            <input type="text" id="preferred_domain" name="preferred_domain" placeholder="Example: Web Development" value="{{ form.get('preferred_domain', '') }}" required>
+                            <label for="target_role">Target role</label>
+                            <select id="target_role" name="target_role" required>
+                                <option value="">Select a role</option>
+                                {% for role in roles %}
+                                <option value="{{ role }}" {% if form.get('target_role') == role or form.get('preferred_domain') == role %}selected{% endif %}>{{ role }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="preferred_work_mode">Preferred work mode</label>

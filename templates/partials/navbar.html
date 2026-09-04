@@ -7,24 +7,23 @@
             {% if is_admin %}
                 <a class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
                 <a class="{% if request.endpoint == 'admin.students' %}active{% endif %}" href="{{ url_for('admin.students') }}">Students</a>
-                <a class="{% if request.endpoint == 'admin.internships' %}active{% endif %}" href="{{ url_for('admin.internships') }}">Internships</a>
-                <a class="{% if request.endpoint == 'admin.applications' %}active{% endif %}" href="{{ url_for('admin.applications') }}">Applications</a>
             {% elif nav_user %}
                 <a class="{% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a>
-                <a class="{% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}">Profile</a>
-                <a class="{% if request.endpoint == 'internships' %}active{% endif %}" href="{{ url_for('internships') }}">Internships</a>
-                <a class="{% if request.endpoint == 'recommendations' %}active{% endif %}" href="{{ url_for('recommendations') }}">Recommendations</a>
+                <a class="{% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}">My Profile</a>
+                <a class="{% if request.endpoint == 'resume_analyzer' %}active{% endif %}" href="{{ url_for('resume_analyzer') }}">Resume Analysis</a>
+                <a class="{% if request.endpoint == 'resume_fixer' %}active{% endif %}" href="{{ url_for('resume_fixer') }}">Fix Resume</a>
                 <a class="{% if request.endpoint == 'skill_gap' %}active{% endif %}" href="{{ url_for('skill_gap') }}">Skill Gap</a>
-                <a class="{% if request.endpoint == 'my_applications' %}active{% endif %}" href="{{ url_for('my_applications') }}">Applications</a>
+                <a class="{% if request.endpoint == 'preparation_plan' %}active{% endif %}" href="{{ url_for('preparation_plan') }}">Preparation Plan</a>
+                <a class="{% if request.endpoint == 'interview_arena' %}active{% endif %}" href="{{ url_for('interview_arena') }}">AI Examiner</a>
+                <a class="{% if request.endpoint == 'video_interview' %}active{% endif %}" href="{{ url_for('video_interview') }}">Mock Interview</a>
+                <a class="{% if request.endpoint == 'progress' %}active{% endif %}" href="{{ url_for('progress') }}">My Progress</a>
             {% else %}
                 {% if request.endpoint == 'home' %}
                     <a href="#features">Features</a>
-                    <a href="#ai-tools">AI Tools</a>
                     <a href="#how-it-works">How It Works</a>
                 {% else %}
                     <a href="{{ url_for('home') }}">Home</a>
                 {% endif %}
-                <a class="{% if request.endpoint == 'internships' %}active{% endif %}" href="{{ url_for('internships') }}">Internships</a>
                 <a class="{% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Login</a>
             {% endif %}
         </nav>

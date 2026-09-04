@@ -13,59 +13,60 @@
         <section class="hero" id="get-started">
             <div class="container hero-grid">
                 <div class="hero-text fade-in">
-                    <p class="badge">Smart Internship Matching</p>
+                    <p class="badge">AI Career Coach</p>
                     <h1>InternMatch AI</h1>
-                    <p class="tagline">Find internships that match your skills.</p>
+                    <p class="tagline">Make mistakes here. Crack interviews there.</p>
                     <p class="hero-desc">
-                        Discover opportunities that fit your strengths, interests, and goals.
-                        InternMatch AI helps students connect with the right internships faster.
-                        All listings in this project are <strong>sample internships</strong> for demonstration.
+                        An AI-powered career preparation platform that analyzes your resume,
+                        discovers your skill gaps, tests your knowledge, identifies your mistakes
+                        and helps you become interview-ready.
                     </p>
                     <div class="hero-actions">
-                        <a class="btn btn-pulse" href="{{ url_for('register') }}">Get Started</a>
-                        <a class="btn btn-outline" href="#how-it-works">See How It Works</a>
+                        <a class="btn btn-pulse" href="{{ url_for('resume_analyzer') }}">Analyze My Resume</a>
+                        <a class="btn btn-outline" href="{{ url_for('interview_arena') }}">Test My Skills</a>
                     </div>
                     <div class="hero-stats">
                         <div>
-                            <strong>Sample</strong>
-                            <span>Demo Internships</span>
+                            <strong>01</strong>
+                            <span>Analyze My Resume</span>
                         </div>
                         <div>
-                            <strong>Smart</strong>
-                            <span>Skill Matching</span>
+                            <strong>02</strong>
+                            <span>Check My Readiness</span>
                         </div>
                         <div>
-                            <strong>Simple</strong>
-                            <span>Student Friendly</span>
+                            <strong>03</strong>
+                            <span>Start AI Exam</span>
                         </div>
                     </div>
+                    <p class="hero-desc">You don't find your internship here. You become ready for it here.</p>
                 </div>
 
                 <div class="hero-visual fade-in delay-1">
                     <img class="hero-photo"
                          src="{{ url_for('static', filename='images/hero-students.png') }}"
-                         alt="Students searching for internships together">
+                         alt="Students preparing for interviews">
                     <div class="preview-card float-card">
-                        <p class="preview-label">Match Preview</p>
-                        <h3>Recommended for you</h3>
+                        <p class="preview-label">Readiness Preview</p>
+                        <h3>Interview readiness</h3>
                         <div class="match-item">
                             <div>
-                                <h4>Web Development Intern</h4>
-                                <p>HTML · CSS · Python</p>
+                                <h4>Resume strength</h4>
+                                <p>Skills extracted locally</p>
                             </div>
-                            <span class="match-score">92%</span>
+                            <span class="match-score">91%</span>
                         </div>
                         <div class="match-item">
                             <div>
-                                <h4>Data Analysis Intern</h4>
-                                <p>Python · Excel · SQL</p>
+                                <h4>Role readiness</h4>
+                                <p>TF-IDF + neural estimate</p>
                             </div>
-                            <span class="match-score">88%</span>
+                            <span class="match-score">78%</span>
                         </div>
                         <div class="match-item">
                             <div>
-                                <h4>UI/UX Design Intern</h4>
-                                <p>Figma · Design · Research</p>
+                                <h4>Last exam</h4>
+                                <p>Practice before companies</p>
                             </div>
                             <span class="match-score">84%</span>
                         </div>
@@ -79,73 +80,73 @@
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">4.9</p>
-                    <p>Helped me find internships that actually match my skills.</p>
+                    <p>The exam review showed the exact topics I kept missing.</p>
                     <span>Aarav · BCA Student</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">4.8</p>
-                    <p>Simple, clean, and perfect for students starting out.</p>
+                    <p>Simple, clean, and useful for practicing before real interviews.</p>
                     <span>Meera · Computer Science</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">5.0</p>
-                    <p>The matching idea is exactly what internship search needed.</p>
+                    <p>Role readiness made my skill gaps obvious, without promising a job.</p>
                     <span>Rohan · Final Year</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★☆</p>
                     <p class="rating-score">4.7</p>
-                    <p>Saved time instead of scrolling through random listings.</p>
+                    <p>The 14-day plan gave me something concrete to study each day.</p>
                     <span>Ananya · BCA</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">4.9</p>
-                    <p>Loved how easy it was to create a profile and get started.</p>
+                    <p>Loved how easy it was to create a profile and start an exam.</p>
                     <span>Ishaan · Student</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">4.8</p>
-                    <p>A useful project for students looking for better internship fits.</p>
+                    <p>Resume analysis extracted skills I had actually written down.</p>
                     <span>Diya · BCA Student</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">4.9</p>
-                    <p>Helped me find internships that actually match my skills.</p>
+                    <p>The exam review showed the exact topics I kept missing.</p>
                     <span>Aarav · BCA Student</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">4.8</p>
-                    <p>Simple, clean, and perfect for students starting out.</p>
+                    <p>Simple, clean, and useful for practicing before real interviews.</p>
                     <span>Meera · Computer Science</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">5.0</p>
-                    <p>The matching idea is exactly what internship search needed.</p>
+                    <p>Role readiness made my skill gaps obvious, without promising a job.</p>
                     <span>Rohan · Final Year</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★☆</p>
                     <p class="rating-score">4.7</p>
-                    <p>Saved time instead of scrolling through random listings.</p>
+                    <p>The 14-day plan gave me something concrete to study each day.</p>
                     <span>Ananya · BCA</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">4.9</p>
-                    <p>Loved how easy it was to create a profile and get started.</p>
+                    <p>Loved how easy it was to create a profile and start an exam.</p>
                     <span>Ishaan · Student</span>
                 </article>
                 <article class="rating-card">
                     <p class="stars">★★★★★</p>
                     <p class="rating-score">4.8</p>
-                    <p>A useful project for students looking for better internship fits.</p>
+                    <p>Resume analysis extracted skills I had actually written down.</p>
                     <span>Diya · BCA Student</span>
                 </article>
             </div>
@@ -155,11 +156,10 @@
             <div class="container need-grid">
                 <div class="need-copy fade-in">
                     <p class="section-eyebrow">The Need</p>
-                    <h2>Students spend hours searching, but still miss the right internships.</h2>
+                    <h2>Students apply unprepared and repeat the same interview mistakes.</h2>
                     <p>
-                        Many students apply to roles that do not match their skills, location,
-                        or work mode. InternMatch AI is built to solve that problem by focusing
-                        on better matches, not longer search lists.
+                        InternMatch AI helps you practice first: resume analysis, skill gaps,
+                        exams, and mistake review. You still apply on the company's own website.
                     </p>
                 </div>
                 <img class="need-photo fade-in delay-1"
@@ -172,27 +172,27 @@
             <div class="container">
                 <div class="section-header">
                     <p class="section-eyebrow">Why InternMatch AI</p>
-                    <h2>Built to help students find better fits</h2>
-                    <p>A clean, focused platform designed for your BCA final-year project journey.</p>
+                    <h2>Built to make you interview-ready</h2>
+                    <p>Practice here. Apply on real company platforms.</p>
                 </div>
                 <div class="feature-grid">
                     <article class="feature-card">
-                        <img src="{{ url_for('static', filename='images/skill-match.png') }}" alt="Skills matching internships on a laptop">
+                        <img src="{{ url_for('static', filename='images/skill-match.png') }}" alt="Skills analysis on a laptop">
                         <div class="icon">🎯</div>
-                        <h3>Skill-Based Matching</h3>
-                        <p>Match internships with the skills you already have and the ones you want to grow.</p>
+                        <h3>Role Readiness</h3>
+                        <p>See how well your skills match a target role using TF-IDF and a local neural score.</p>
                     </article>
                     <article class="feature-card">
-                        <img src="{{ url_for('static', filename='images/need-search.png') }}" alt="Student reviewing internship options">
+                        <img src="{{ url_for('static', filename='images/need-search.png') }}" alt="Student reviewing practice results">
                         <div class="icon">⚡</div>
-                        <h3>Fast Recommendations</h3>
-                        <p>Get clear suggestions quickly so you spend less time searching and more time applying.</p>
+                        <h3>Mistake Analysis</h3>
+                        <p>Find weak topics after each exam and retry until you improve.</p>
                     </article>
                     <article class="feature-card">
-                        <img src="{{ url_for('static', filename='images/internship-office.png') }}" alt="Student intern working with a mentor">
+                        <img src="{{ url_for('static', filename='images/internship-office.png') }}" alt="Student preparing for interviews">
                         <div class="icon">🎓</div>
-                        <h3>Student Focused</h3>
-                        <p>Designed for learners who want practical internship options with a simple experience.</p>
+                        <h3>AI Examiner</h3>
+                        <p>Take role-based exams and mock interviews before the real one.</p>
                     </article>
                 </div>
             </div>
@@ -202,39 +202,44 @@
             <div class="container">
                 <div class="section-header">
                     <p class="section-eyebrow">AI Tools</p>
-                    <h2>Five local tools for internship success</h2>
-                    <p>Log in to use Resume Analyzer, Career Roadmap, Scam Detector, Interview Arena, and Project Recommendations.</p>
+                    <h2>Local tools for smarter preparation</h2>
+                    <p>Log in to analyze your resume, check readiness, take exams, and track progress.</p>
                 </div>
                 <div class="feature-grid tools-grid">
                     <a class="ai-tool-card" href="{{ url_for('resume_analyzer') }}">
                         <div class="icon">📄</div>
-                        <h3>AI Resume Analyzer</h3>
-                        <p>Find skills, gaps, and resume improvements.</p>
+                        <h3>Analyze My Resume</h3>
+                        <p>Extract skills and weak areas from your resume.</p>
                     </a>
-                    <a class="ai-tool-card" href="{{ url_for('career_roadmap') }}">
-                        <div class="icon">🗺️</div>
-                        <h3>Career Roadmap</h3>
-                        <p>Follow a clear path from beginner to internship-ready.</p>
+                    <a class="ai-tool-card" href="{{ url_for('resume_fixer') }}">
+                        <div class="icon">✏️</div>
+                        <h3>Fix Your Resume</h3>
+                        <p>Rewrite your resume for your target role and download a PDF.</p>
                     </a>
-                    <a class="ai-tool-card" href="{{ url_for('scam_detector') }}">
-                        <div class="icon">🛡️</div>
-                        <h3>Scam Detector</h3>
-                        <p>Check fake internship offers before you apply.</p>
+                    <a class="ai-tool-card" href="{{ url_for('readiness') }}">
+                        <div class="icon">🎯</div>
+                        <h3>Check My Readiness</h3>
+                        <p>See role readiness for your target career.</p>
+                    </a>
+                    <a class="ai-tool-card" href="{{ url_for('interview_arena') }}">
+                        <div class="icon">📝</div>
+                        <h3>Start AI Exam</h3>
+                        <p>Test knowledge and review mistakes.</p>
                     </a>
                     <a class="ai-tool-card" href="{{ url_for('video_interview') }}">
                         <div class="icon">📹</div>
-                        <h3>AI Video Interview</h3>
-                        <p>Join a live video call with an AI interviewer.</p>
+                        <h3>Mock Interview</h3>
+                        <p>Practice answers in a video-style round.</p>
                     </a>
-                    <a class="ai-tool-card" href="{{ url_for('interview_arena') }}">
-                        <div class="icon">🎤</div>
-                        <h3>Interview AI Arena</h3>
-                        <p>Practice answers and get an instant score.</p>
+                    <a class="ai-tool-card" href="{{ url_for('skill_gap') }}">
+                        <div class="icon">🧩</div>
+                        <h3>Skill Gap</h3>
+                        <p>See what to learn next.</p>
                     </a>
-                    <a class="ai-tool-card" href="{{ url_for('project_recommendations') }}">
-                        <div class="icon">💡</div>
-                        <h3>Project Recommendations</h3>
-                        <p>Get project ideas that match your skills.</p>
+                    <a class="ai-tool-card" href="{{ url_for('preparation_plan') }}">
+                        <div class="icon">🗺️</div>
+                        <h3>Preparation Plan</h3>
+                        <p>Get a 14-day plan from your gaps.</p>
                     </a>
                 </div>
             </div>
@@ -245,23 +250,23 @@
                 <div class="section-header">
                     <p class="section-eyebrow">Simple Process</p>
                     <h2>How it works</h2>
-                    <p>Three easy steps from profile to internship match.</p>
+                    <p>Resume → role readiness → exam → mistakes → retry.</p>
                 </div>
                 <div class="steps">
                     <div class="step">
                         <span class="step-number">1</span>
-                        <h3>Add Your Skills</h3>
-                        <p>Share what you know, from programming and design to communication and tools.</p>
+                        <h3>Analyze your resume</h3>
+                        <p>Extract skills that are actually in your resume. Nothing is invented.</p>
                     </div>
                     <div class="step">
                         <span class="step-number">2</span>
-                        <h3>Get Matches</h3>
-                        <p>InternMatch AI compares your profile with internship opportunities.</p>
+                        <h3>Check role readiness</h3>
+                        <p>Compare your profile with a target role using the same local ML matching engine.</p>
                     </div>
                     <div class="step">
                         <span class="step-number">3</span>
-                        <h3>Apply Smarter</h3>
-                        <p>Focus on the roles that fit you best and move forward with confidence.</p>
+                        <h3>Practice, then apply elsewhere</h3>
+                        <p>Take exams, review mistakes, and apply on the company's real careers page.</p>
                     </div>
                 </div>
             </div>
@@ -274,11 +279,10 @@
                      alt="Student starting an internship in a modern office">
                 <div>
                     <p class="section-eyebrow">About the Project</p>
-                    <h2>Your AI-powered internship companion</h2>
+                    <h2>Your AI-powered interview coach</h2>
                     <p>
-                        InternMatch AI is a local web project that aims to make internship discovery
-                        easier for students. This first version focuses on a clean homepage experience.
-                        More features will be added step by step.
+                        InternMatch AI is a local career-preparation project. It does not process
+                        internship applications. Use it to prepare, then apply on official company sites.
                     </p>
                 </div>
                 <a class="btn btn-pulse" href="{{ url_for('register') }}">Get Started</a>
@@ -288,7 +292,7 @@
 
     <footer class="footer">
         <div class="container footer-inner">
-            <p><strong>InternMatch AI</strong> — Find internships that match your skills.</p>
+            <p><strong>InternMatch AI</strong> — Make mistakes here. Crack interviews there.</p>
             <p class="footer-note">Built as a BCA final-year project · Running locally</p>
         </div>
     </footer>

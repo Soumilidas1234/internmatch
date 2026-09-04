@@ -13,70 +13,36 @@
             <section class="dashboard-header">
                 <div>
                     <p class="badge">Skill Gap Analyzer</p>
-                    <h1>Skills to improve</h1>
-                    <p class="auth-subtitle">These missing skills come from your top internship matches. They are a learning guide, not a hiring decision.</p>
+                    <h1>What you know vs what {{ target }} needs</h1>
+                    <p class="auth-subtitle">Use this to decide what to learn next. Scores are estimates, not hiring decisions.</p>
                 </div>
-                <a class="btn" href="{{ url_for('recommendations') }}">View recommendations</a>
             </section>
-
             {% if need_skills %}
             <section class="empty-state">
-                <h2>Complete your profile first</h2>
-                <p class="auth-subtitle">No suitable internships found yet. Complete your profile and upload your resume to improve recommendations.</p>
-                <a class="btn" href="{{ url_for('profile') }}">Update profile</a>
-                <a class="btn btn-outline" href="{{ url_for('resume_analyzer') }}">Upload resume</a>
+                <h2>Add skills first</h2>
+                <a class="btn" href="{{ url_for('resume_analyzer') }}">Analyze My Resume</a>
             </section>
-            {% elif not internships_available %}
-            <section class="empty-state">
-                <h2>No internships available</h2>
-                <p class="auth-subtitle">Add internships to the local database to see skill gaps.</p>
-                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
-            </section>
-            {% elif skill_gaps %}
-            <section class="gap-panel">
-                <p>
-                    {% for skill in skill_gaps %}
-                    <span class="skill-missing">⚠ {{ skill }}</span>
-                    {% endfor %}
-                </p>
-                <a class="btn btn-small" href="{{ url_for('career_roadmap') }}">Open career roadmap</a>
-            </section>
-            {% if top_matches %}
-            <section class="intern-grid">
-                {% for item in top_matches %}
-                <article class="intern-card match-card">
-                    <div class="score-badge score-{{ item.score_class }}">
-                        <span>{{ item.final_score }}% Match</span>
-                        <small>{{ item.label }}</small>
-                    </div>
-                    <h3>{{ item.internship.title }}</h3>
-                    <p class="preview-label">{{ item.internship.company }}</p>
-                    <p><strong>Matching skills:</strong></p>
-                    <p>
-                        {% for skill in item.matched_skills %}
-                            <span class="skill-ok">✓ {{ skill }}</span>
-                        {% else %}
-                            <span>No matching skills found.</span>
-                        {% endfor %}
-                    </p>
-                    <p><strong>Missing skills:</strong></p>
-                    <p>
-                        {% for skill in item.missing_skills %}
-                            <span class="skill-missing">⚠ {{ skill }}</span>
-                        {% else %}
-                            <span>No missing required skills.</span>
-                        {% endfor %}
-                    </p>
-                    <p class="match-note">{{ item.why }}</p>
-                </article>
-                {% endfor %}
-            </section>
-            {% endif %}
             {% else %}
-            <section class="empty-state">
-                <h2>No matching skills found.</h2>
-                <p class="auth-subtitle">No suitable internships found yet. Complete your profile and upload your resume to improve recommendations.</p>
-                <a class="btn" href="{{ url_for('profile') }}">Update profile</a>
+            <section class="intern-grid">
+                <article class="intern-card">
+                    <h3>What you know</h3>
+                    {% for skill in have %}
+                    <p class="skill-ok">✓ {{ skill }}</p>
+                    {% else %}<p>No overlapping required skills yet.</p>{% endfor %}
+                </article>
+                <article class="intern-card">
+                    <h3>What you're missing</h3>
+                    {% for skill in missing %}
+                    <p class="skill-missing">✗ {{ skill }}</p>
+                    {% else %}<p>No missing items from this role skill list.</p>{% endfor %}
+                </article>
+                <article class="intern-card">
+                    <h3>What you should learn next</h3>
+                    <p><strong>HIGH:</strong> {{ priority.high|join(', ') or '—' }}</p>
+                    <p><strong>MEDIUM:</strong> {{ priority.medium|join(', ') or '—' }}</p>
+                    <p><strong>LOW:</strong> {{ priority.low|join(', ') or '—' }}</p>
+                    <a class="btn btn-small" href="{{ url_for('preparation_plan') }}">Build my plan</a>
+                </article>
             </section>
             {% endif %}
         </div>

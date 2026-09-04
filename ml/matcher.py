@@ -161,6 +161,8 @@ def explain_match(result):
         bits.append("compatible location or work mode")
     if result["education_match"]:
         bits.append("education fits a student internship")
+    if result.get("neural_score", 0) >= 60:
+        bits.append("a neural text match")
     if not bits:
         return "Limited overlap with this role. Review missing skills before applying."
     return "This role has " + " and ".join(bits) + "."
@@ -182,7 +184,7 @@ def compute_text_similarities(student_text, internship_texts):
     return [int(round(float(score) * 100)) for score in scores]
 
 
-def score_internship(student, internship, text_similarity_score):
+def score_internship(student, internship, text_similarity_score, neural_score=0):
     student_skills = parse_skills(student.get("skills", ""))
     intern_skills = parse_skills(internship.required_skills)
     skill_score, matched, missing = skill_match_score(student_skills, intern_skills)
@@ -191,8 +193,9 @@ def score_internship(student, internship, text_similarity_score):
     edu_score, edu_ok = education_match_score(student.get("education", ""), internship)
 
     final_score = round(
-        (0.50 * skill_score)
-        + (0.25 * text_similarity_score)
+        (0.40 * skill_score)
+        + (0.20 * text_similarity_score)
+        + (0.15 * neural_score)
         + (0.10 * domain_score)
         + (0.10 * loc_score)
         + (0.05 * edu_score)
@@ -205,6 +208,7 @@ def score_internship(student, internship, text_similarity_score):
         "final_score": final_score,
         "skill_score": skill_score,
         "text_similarity_score": text_similarity_score,
+        "neural_score": int(neural_score),
         "matched_skills": [display_skill(skill) for skill in matched],
         "missing_skills": [display_skill(skill) for skill in missing],
         "domain_match": domain_ok,

@@ -1,64 +1,67 @@
 {% extends "admin/base.html" %}
-{% block title %}Dashboard{% endblock %}
-{% block heading %}Admin Dashboard{% endblock %}
+{% block title %}Analytics{% endblock %}
+{% block heading %}Preparation Analytics{% endblock %}
 {% block content %}
 <section class="admin-stats">
     <article class="admin-stat">
-        <p>Total Students</p>
+        <p>Students</p>
         <h2>{{ stats.students }}</h2>
     </article>
     <article class="admin-stat">
-        <p>Total Internships</p>
-        <h2>{{ stats.internships }}</h2>
+        <p>Resume analyses</p>
+        <h2>{{ stats.resume_analyses }}</h2>
     </article>
     <article class="admin-stat">
-        <p>Total Applications</p>
-        <h2>{{ stats.applications }}</h2>
+        <p>Examinations</p>
+        <h2>{{ stats.exams }}</h2>
     </article>
-    <article class="admin-stat admin-stat-pending">
-        <p>Pending Applications</p>
-        <h2>{{ stats.pending }}</h2>
+    <article class="admin-stat">
+        <p>Average exam score</p>
+        <h2>{% if stats.avg_exam is not none %}{{ stats.avg_exam }}%{% else %}—{% endif %}</h2>
     </article>
-    <article class="admin-stat admin-stat-accepted">
-        <p>Accepted Applications</p>
-        <h2>{{ stats.accepted }}</h2>
+    <article class="admin-stat">
+        <p>Average readiness</p>
+        <h2>{% if stats.avg_readiness is not none %}{{ stats.avg_readiness }}%{% else %}—{% endif %}</h2>
     </article>
-    <article class="admin-stat admin-stat-rejected">
-        <p>Rejected Applications</p>
-        <h2>{{ stats.rejected }}</h2>
+    <article class="admin-stat">
+        <p>Most selected target role</p>
+        <h2>{{ stats.top_role }}</h2>
+    </article>
+    <article class="admin-stat">
+        <p>Most common skill gap</p>
+        <h2>{{ stats.top_gap }}</h2>
+    </article>
+    <article class="admin-stat">
+        <p>Most common exam topic missed</p>
+        <h2>{{ stats.top_mistake }}</h2>
     </article>
 </section>
 
-<section class="admin-panel">
-    <div class="admin-panel-head">
-        <h3>Recent applications</h3>
-        <a class="btn btn-small" href="{{ url_for('admin.applications') }}">View all</a>
-    </div>
-    {% if recent_applications %}
-    <div class="admin-table-wrap">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Internship</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in recent_applications %}
-                <tr>
-                    <td>{{ item.user.name if item.user else 'Unknown' }}</td>
-                    <td>{{ item.internship.title if item.internship else 'Removed' }}</td>
-                    <td><span class="status-badge status-{{ item.status|lower }}">{{ item.status }}</span></td>
-                    <td>{{ item.applied_date.strftime('%d %b %Y') if item.applied_date else '-' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <p class="admin-empty">No applications available.</p>
-    {% endif %}
+<section class="intern-grid">
+    <article class="intern-card">
+        <h3>Most selected target roles</h3>
+        {% for role, count in role_counts %}
+        <p>{{ role }} — {{ count }}</p>
+        {% else %}
+        <p>No student target roles yet.</p>
+        {% endfor %}
+    </article>
+    <article class="intern-card">
+        <h3>Common skill gaps</h3>
+        {% for skill, count in gap_counts %}
+        <p>{{ skill }} — {{ count }} student{{ '' if count == 1 else 's' }}</p>
+        {% else %}
+        <p>No skill-gap data yet.</p>
+        {% endfor %}
+    </article>
+    <article class="intern-card">
+        <h3>Common exam mistakes</h3>
+        {% for topic, count in mistake_counts %}
+        <p>{{ topic }} — {{ count }} miss{{ '' if count == 1 else 'es' }}</p>
+        {% else %}
+        <p>No exam attempts have been saved yet.</p>
+        {% endfor %}
+    </article>
 </section>
+<p class="auth-subtitle">These figures are counted from registered students, resume_analyzed_count, and exam_attempts. Empty values stay as —.</p>
 {% endblock %}

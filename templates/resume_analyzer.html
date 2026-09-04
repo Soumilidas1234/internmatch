@@ -29,15 +29,38 @@
                         <label for="resume_file">Or upload a file</label>
                         <input type="file" id="resume_file" name="resume_file" accept=".txt,.pdf">
                     </div>
-                    <button class="btn" type="submit">Analyze Resume</button>
+                    <div class="header-actions">
+                        <button class="btn" type="submit">Analyze Resume</button>
+                        <a class="btn btn-outline" href="{{ url_for('resume_fixer') }}">Fix Your Resume</a>
+                    </div>
                 </form>
             </section>
 
             {% if result %}
             <section class="result-grid">
                 <article class="profile-card">
-                    <h3>Resume Score</h3>
-                    <p class="big-score">{{ result.score }}/100</p>
+                    <h3>Resume Strength</h3>
+                    <p class="big-score">{{ result.score }}%</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Education mentioned</h3>
+                    <p>{% if result.education_found %}Found in resume text{% else %}Not clearly mentioned{% endif %}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Experience mentioned</h3>
+                    <p>{% if result.experience_found %}Found in resume text{% else %}Not clearly mentioned{% endif %}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Projects mentioned</h3>
+                    <p>{% if result.projects_found %}Found in resume text{% else %}Not clearly mentioned{% endif %}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Strong areas</h3>
+                    <p>{{ result.strengths | join(', ') or 'None detected from the skill list' }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Needs improvement</h3>
+                    <p>{{ result.weak_areas | join(', ') or 'None from the target-role list' }}</p>
                 </article>
                 <article class="profile-card">
                     <h3>Best Fit Domain</h3>
@@ -62,6 +85,7 @@
                             <li>{{ tip }}</li>
                         {% endfor %}
                     </ul>
+                    <a class="btn btn-small" href="{{ url_for('resume_fixer') }}">Rebuild for your target role</a>
                 </article>
             </section>
             {% endif %}
