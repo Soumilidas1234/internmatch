@@ -10,16 +10,30 @@ This is a final-year academic project. **All internship listings are fictional s
 
 ## Live demo (for examiners)
 
-**App URL:** _will be added after deployment_
+**Student login (also shown on the website)**
 
 | | |
 | --- | --- |
-| Student email | `demo.student@internmatch.local` |
-| Student password | `Demo@123` |
+| Email | `demo.student@internmatch.local` |
+| Password | `Demo@123` |
 
-Use the student login above. You should see sample internships, recommendations, and application tracking. Do not treat any listing as a real internship.
+Internship listings are **fictional sample data**, not real jobs.
 
-The admin password is not stored in source code. It is set with the `ADMIN_PASSWORD` environment variable.
+### Hosted URL
+
+After you deploy (one-time, free), the app URL is usually:
+
+`https://internmatch.onrender.com`
+
+Deploy from GitHub with this button:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Soumilidas1234/internmatch)
+
+Or: [Open Render deploy](https://render.com/deploy?repo=https://github.com/Soumilidas1234/internmatch)
+
+Sign in with GitHub, click **Apply**, wait until the service is Live, then copy the `.onrender.com` URL. Send that URL to the examiner with the student login above.
+
+The admin password is **not** on the website. Set it as `ADMIN_PASSWORD` in the host environment (Render generates one if you use `render.yaml`).
 
 ---
 
