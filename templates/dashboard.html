@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Student Dashboard</p>
+                    <h1>Welcome, {{ user.name }}</h1>
+                    <p class="auth-subtitle">This is your InternMatch AI profile.</p>
+                </div>
+                <div class="header-actions">
+                    <a class="btn btn-pulse" href="{{ url_for('recommendations') }}">✨ Find My Best Internships</a>
+                    <a class="btn" href="{{ url_for('my_applications') }}">My Applications</a>
+                </div>
+            </section>
+
+            <section class="tools-intro">
+                <p class="section-eyebrow">Profile Strength</p>
+                <h2>Your internship-ready score</h2>
+            </section>
+            <section class="strength-panel strength-{{ profile.css_class }}">
+                <div class="strength-meter">
+                    <div class="strength-score">
+                        <strong>{{ profile.score }}%</strong>
+                        <span>{{ profile.label }}</span>
+                    </div>
+                    <div class="strength-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ profile.score }}" aria-label="Profile strength">
+                        <span style="width: {{ profile.score }}%;"></span>
+                    </div>
+                    <p class="auth-subtitle">Based on your profile fields, skills, and resume analysis. This is a local completeness score, not a hiring guarantee.</p>
+                    <ul class="strength-checks">
+                        {% for check in profile.checks %}
+                        <li class="{% if check.done %}done{% endif %}">{% if check.done %}✓{% else %}○{% endif %} {{ check.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="strength-tips">
+                    <h3>How to improve</h3>
+                    <ul class="tip-list">
+                        {% for tip in profile.suggestions %}
+                        <li>
+                            {% if tip.href %}
+                            <a href="{{ url_for(tip.href) }}">{{ tip.text }}</a>
+                            {% else %}
+                            {{ tip.text }}
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+
+            <section class="tools-intro">
+                <p class="section-eyebrow">AI Matches</p>
+                <h2>Top internships for you</h2>
+            </section>
+            {% if need_resume %}
+            <section class="arena-stage">
+                <h2>Add skills to see matches</h2>
+                <p class="auth-subtitle">Analyze your resume or add skills on your profile to unlock personalized internship matches.</p>
+                <a class="btn" href="{{ url_for('resume_analyzer') }}">Analyze Resume</a>
+            </section>
+            {% elif not internships_available %}
+            <section class="arena-stage">
+                <h2>No internships found</h2>
+                <p class="auth-subtitle">Import the sample dataset first, then your top matches will appear here.</p>
+                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
+            </section>
+            {% elif top_matches %}
+            <section class="intern-grid">
+                {% for item in top_matches %}
+                <article class="intern-card match-card">
+                    <div class="score-badge score-{{ item.score_class }}">
+                        <span>🎯 {{ item.final_score }}% Match</span>
+                        <small>{{ item.label }}</small>
+                    </div>
+                    <h3>{{ item.internship.title }}</h3>
+                    <p class="preview-label">{{ item.internship.company }}</p>
+                    <p>{{ item.internship.location }} · {{ item.internship.work_mode }}</p>
+                    <a class="btn btn-small" href="{{ url_for('internship_detail', internship_id=item.internship.id) }}">View internship</a>
+                </article>
+                {% endfor %}
+            </section>
+            <p class="auth-subtitle">These are your top 3 matches. Open the full list for scores and skill gaps.</p>
+            <a class="btn" href="{{ url_for('recommendations') }}">See all matches</a>
+            {% else %}
+            <section class="arena-stage">
+                <h2>No recommendations yet</h2>
+                <p class="auth-subtitle">Internships are available, but match scores could not be generated yet.</p>
+                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
+            </section>
+            {% endif %}
+
+            {% if skill_gaps %}
+            <section class="tools-intro">
+                <p class="section-eyebrow">Skill Gap</p>
+                <h2>Skills to improve</h2>
+            </section>
+            <section class="gap-panel">
+                <p class="auth-subtitle">These skills appear in your top matches but are not yet on your profile.</p>
+                <p>
+                    {% for skill in skill_gaps %}
+                    <span class="skill-missing">⚠ {{ skill }}</span>
+                    {% endfor %}
+                </p>
+                <a class="btn btn-small btn-outline" href="{{ url_for('career_roadmap') }}">Open career roadmap</a>
+            </section>
+            {% endif %}
+
+            <section class="tools-intro">
+                <p class="section-eyebrow">AI Tools</p>
+                <h2>Use InternMatch AI tools</h2>
+            </section>
+            <section class="feature-grid tools-grid">
+                <a class="ai-tool-card featured-tool" href="{{ url_for('recommendations') }}">
+                    <div class="icon">✨</div>
+                    <h3>Find My Best Internships</h3>
+                    <p>Get AI match scores based on your skills and profile.</p>
+                </a>
+                <a class="ai-tool-card" href="{{ url_for('my_applications') }}">
+                    <div class="icon">📋</div>
+                    <h3>My Applications</h3>
+                    <p>Track Applied, Shortlisted, Interview, Selected, and Rejected statuses.</p>
+                </a>
+                <a class="ai-tool-card featured-tool" href="{{ url_for('internships') }}">
+                    <div class="icon">💼</div>
+                    <h3>Browse Internships</h3>
+                    <p>Search sample internship listings by title, company, and skills.</p>
+                </a>
+                <a class="ai-tool-card" href="{{ url_for('resume_analyzer') }}">
+                    <div class="icon">📄</div>
+                    <h3>AI Resume Analyzer</h3>
+                    <p>Check skills, gaps, and resume strength.</p>
+                </a>
+                <a class="ai-tool-card" href="{{ url_for('career_roadmap') }}">
+                    <div class="icon">🗺️</div>
+                    <h3>Career Roadmap</h3>
+                    <p>Get a step-by-step path for your domain.</p>
+                </a>
+                <a class="ai-tool-card" href="{{ url_for('scam_detector') }}">
+                    <div class="icon">🛡️</div>
+                    <h3>Scam Detector</h3>
+                    <p>Scan internship offers for warning signs.</p>
+                </a>
+                <a class="ai-tool-card featured-tool" href="{{ url_for('video_interview') }}">
+                    <div class="icon">📹</div>
+                    <h3>AI Video Interview</h3>
+                    <p>Join a live video call with an AI interviewer using your camera.</p>
+                </a>
+                <a class="ai-tool-card" href="{{ url_for('interview_arena') }}">
+                    <div class="icon">🎤</div>
+                    <h3>AI Interview Arena</h3>
+                    <p>Practice live rounds with an AI coach and get an instant score.</p>
+                </a>
+                <a class="ai-tool-card" href="{{ url_for('project_recommendations') }}">
+                    <div class="icon">💡</div>
+                    <h3>Project Recommendations</h3>
+                    <p>Build projects that match internship skills.</p>
+                </a>
+            </section>
+
+            <section class="profile-grid">
+                <article class="profile-card">
+                    <h3>Name</h3>
+                    <p>{{ user.name }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Education</h3>
+                    <p>{{ user.education }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>CGPA</h3>
+                    <p>{{ user.cgpa }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Location</h3>
+                    <p>{{ user.location }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Preferred domain</h3>
+                    <p>{{ user.preferred_domain }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Preferred work mode</h3>
+                    <p>{{ user.preferred_work_mode }}</p>
+                </article>
+                <article class="profile-card profile-card-wide">
+                    <h3>Skills</h3>
+                    <p>{{ user.skills }}</p>
+                </article>
+            </section>
+
+            <section class="tools-intro">
+                <p class="section-eyebrow">Applications</p>
+                <h2>Application Overview</h2>
+            </section>
+            <section class="stats-grid">
+                <article class="stat-card">
+                    <p>Applications</p>
+                    <h3>{{ overview.total }}</h3>
+                </article>
+                <article class="stat-card stat-shortlisted">
+                    <p>Shortlisted</p>
+                    <h3>{{ overview.shortlisted }}</h3>
+                </article>
+                <article class="stat-card stat-interview">
+                    <p>Interviews</p>
+                    <h3>{{ overview.interviews }}</h3>
+                </article>
+                <article class="stat-card stat-selected">
+                    <p>Selected</p>
+                    <h3>{{ overview.selected }}</h3>
+                </article>
+                <article class="stat-card stat-rejected">
+                    <p>Rejected</p>
+                    <h3>{{ overview.rejected }}</h3>
+                </article>
+            </section>
+
+            <section class="tools-intro">
+                <p class="section-eyebrow">Tracker</p>
+                <h2>My internship applications</h2>
+            </section>
+            {% if applications %}
+            <section class="intern-grid">
+                {% for item in applications %}
+                <article class="intern-card">
+                    <span class="status-badge status-{{ item.status|lower }}">{{ item.status }}</span>
+                    <h3>{{ item.internship.title }}</h3>
+                    <p><strong>Company:</strong> {{ item.internship.company }}</p>
+                    <p><strong>Location:</strong> {{ item.internship.location }}</p>
+                    <p><strong>Applied on:</strong> {{ item.applied_date.strftime('%d %b %Y') }}</p>
+                    <a class="btn btn-small" href="{{ url_for('internship_detail', internship_id=item.internship_id) }}">View internship</a>
+                </article>
+                {% endfor %}
+            </section>
+            <p class="auth-subtitle">Update status and view the full timeline on My Applications.</p>
+            <a class="btn" href="{{ url_for('my_applications') }}">Open application tracker</a>
+            {% else %}
+            <section class="empty-state">
+                <h2>You haven't applied to any internships yet.</h2>
+                <p class="auth-subtitle">Open Internships, pick a role, and click Apply Now.</p>
+                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scam Detector | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Safety Tool</p>
+                    <h1>Internship Scam Detector</h1>
+                    <p class="auth-subtitle">Paste an internship offer and check it for common scam warning signs.</p>
+                </div>
+            </section>
+
+            <section class="auth-card">
+                <form method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="company">Company name</label>
+                            <input type="text" id="company" name="company" placeholder="Example: InternMatch Labs">
+                        </div>
+                        <div class="form-group">
+                            <label for="title">Internship title</label>
+                            <input type="text" id="title" name="title" placeholder="Example: Python Intern">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact">Contact / email / WhatsApp</label>
+                        <input type="text" id="contact" name="contact" placeholder="Example: hr@company.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="posting">Offer message or posting</label>
+                        <textarea id="posting" name="posting" rows="6" placeholder="Paste the internship message here..." required></textarea>
+                    </div>
+                    <button class="btn" type="submit">Check for Scam</button>
+                </form>
+            </section>
+
+            {% if result %}
+            <section class="result-grid">
+                <article class="profile-card risk-{{ result.level }}">
+                    <h3>Risk Score</h3>
+                    <p class="big-score">{{ result.score }}/100</p>
+                    <p>{{ result.verdict }}</p>
+                </article>
+                <article class="profile-card profile-card-wide">
+                    <h3>Advice</h3>
+                    <p>{{ result.advice }}</p>
+                    <ul class="tip-list">
+                        {% for flag in result.flags %}
+                            <li>{{ flag }}</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

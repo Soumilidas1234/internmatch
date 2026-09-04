@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+{% block title %}Internships{% endblock %}
+{% block heading %}Internship Management{% endblock %}
+{% block content %}
+<section class="admin-panel">
+    <div class="admin-panel-head">
+        <h3>All internships</h3>
+        <a class="btn btn-small" href="{{ url_for('admin.add_internship') }}">Add internship</a>
+    </div>
+    {% if internships %}
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Title</th>
+                    <th>Location</th>
+                    <th>Work mode</th>
+                    <th>Duration</th>
+                    <th>Stipend</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in internships %}
+                <tr>
+                    <td>{{ item.company }}</td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.location }}</td>
+                    <td>{{ item.work_mode }}</td>
+                    <td>{{ item.duration }}</td>
+                    <td>{{ item.stipend }}</td>
+                    <td class="admin-actions">
+                        <a class="btn btn-small btn-outline" href="{{ url_for('admin.edit_internship', internship_id=item.id) }}">Edit</a>
+                        <a class="btn btn-small btn-danger" href="{{ url_for('admin.delete_internship', internship_id=item.id) }}">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="admin-empty">No internships available.</p>
+    {% endif %}
+</section>
+{% endblock %}

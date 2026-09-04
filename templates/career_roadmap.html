@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Roadmap | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">AI Tool</p>
+                    <h1>Career Roadmap</h1>
+                    <p class="auth-subtitle">A step-by-step path for {{ selected }}, based on your profile.</p>
+                </div>
+            </section>
+
+            <section class="auth-card">
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="domain">Choose a career path</label>
+                        <select id="domain" name="domain">
+                            {% for domain in domains %}
+                                <option value="{{ domain }}" {% if domain == selected %}selected{% endif %}>{{ domain }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn" type="submit">Build Roadmap</button>
+                </form>
+            </section>
+
+            <section class="roadmap-list">
+                {% for step in steps %}
+                <article class="roadmap-step">
+                    <span class="step-number">{{ loop.index }}</span>
+                    <div>
+                        <p class="preview-label">{{ step.level }} · {{ step.status }}</p>
+                        <h3>{{ step.title }}</h3>
+                        <p>Focus skills: {{ step.skills | join(', ') }}</p>
+                        <p>Goal: {{ step.goal }}</p>
+                        {% if step.matched %}
+                            <p class="match-note">You already have: {{ step.matched | join(', ') }}</p>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </section>
+        </div>
+    </main>
+</body>
+</html>

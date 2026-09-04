@@ -1,0 +1,53 @@
+{% extends "admin/base.html" %}
+{% block title %}Applications{% endblock %}
+{% block heading %}Application Management{% endblock %}
+{% block content %}
+<section class="admin-panel">
+    <div class="admin-panel-head">
+        <h3>All applications</h3>
+        <p>{{ applications|length }} record{{ 's' if applications|length != 1 else '' }}</p>
+    </div>
+    {% if applications %}
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Student name</th>
+                    <th>Student email</th>
+                    <th>Internship</th>
+                    <th>Company</th>
+                    <th>Applied date</th>
+                    <th>Current status</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in applications %}
+                <tr>
+                    <td>{{ item.user.name if item.user else 'Unknown' }}</td>
+                    <td>{{ item.user.email if item.user else '-' }}</td>
+                    <td>{{ item.internship.title if item.internship else 'Removed' }}</td>
+                    <td>{{ item.internship.company if item.internship else '-' }}</td>
+                    <td>{{ item.applied_date.strftime('%d %b %Y') if item.applied_date else '-' }}</td>
+                    <td><span class="status-badge status-{{ item.status|lower }}">{{ item.status }}</span></td>
+                    <td>
+                        <form class="status-form" method="POST" action="{{ url_for('admin.update_application_status', application_id=item.id) }}">
+                            <label class="sr-only" for="status-{{ item.id }}">Status</label>
+                            <select id="status-{{ item.id }}" name="status">
+                                {% for status in statuses %}
+                                <option value="{{ status }}" {% if item.status == status %}selected{% endif %}>{{ status }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-small" type="submit">Save</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="admin-empty">No applications available.</p>
+    {% endif %}
+</section>
+{% endblock %}

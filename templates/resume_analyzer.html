@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">AI Tool</p>
+                    <h1>AI Resume Analyzer</h1>
+                    <p class="auth-subtitle">Paste your resume or upload a .txt / .pdf file. Analysis runs locally.</p>
+                </div>
+            </section>
+
+            <section class="auth-card">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="resume_text">Paste resume text</label>
+                        <textarea id="resume_text" name="resume_text" rows="8" placeholder="Paste your resume here..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="resume_file">Or upload a file</label>
+                        <input type="file" id="resume_file" name="resume_file" accept=".txt,.pdf">
+                    </div>
+                    <button class="btn" type="submit">Analyze Resume</button>
+                </form>
+            </section>
+
+            {% if result %}
+            <section class="result-grid">
+                <article class="profile-card">
+                    <h3>Resume Score</h3>
+                    <p class="big-score">{{ result.score }}/100</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Best Fit Domain</h3>
+                    <p>{{ result.domain }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Word Count</h3>
+                    <p>{{ result.word_count }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Detected Skills</h3>
+                    <p>{{ result.found_skills | join(', ') }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Skill Gaps</h3>
+                    <p>{{ result.missing_skills | join(', ') }}</p>
+                </article>
+                <article class="profile-card profile-card-wide">
+                    <h3>Suggestions</h3>
+                    <ul class="tip-list">
+                        {% for tip in result.suggestions %}
+                            <li>{{ tip }}</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

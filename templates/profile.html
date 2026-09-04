@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Profile | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Student Profile</p>
+                    <h1>Complete your profile</h1>
+                    <p class="auth-subtitle">Keep your details up to date so internship matches stay accurate.</p>
+                </div>
+            </section>
+            <section class="auth-card">
+                <form method="POST" action="{{ url_for('profile') }}">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" value="{{ user.name or '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="{{ user.email or '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="education">Education</label>
+                            <input type="text" id="education" name="education" value="{{ user.education or '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cgpa">CGPA</label>
+                            <input type="number" id="cgpa" name="cgpa" step="0.01" min="0" max="10" value="{{ user.cgpa if user.cgpa is not none else '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ user.location or '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="preferred_domain">Preferred internship domain</label>
+                            <input type="text" id="preferred_domain" name="preferred_domain" value="{{ user.preferred_domain or '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="preferred_work_mode">Preferred work mode</label>
+                            <select id="preferred_work_mode" name="preferred_work_mode" required>
+                                <option value="">Select work mode</option>
+                                {% for mode in ['On-site', 'Remote', 'Hybrid'] %}
+                                <option value="{{ mode }}" {% if user.preferred_work_mode == mode %}selected{% endif %}>{{ mode }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="skills">Skills</label>
+                        <textarea id="skills" name="skills" rows="3" required>{{ user.skills or '' }}</textarea>
+                    </div>
+                    <button class="btn" type="submit">Save profile</button>
+                </form>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

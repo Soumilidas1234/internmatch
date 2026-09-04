@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Applications | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Application Tracker</p>
+                    <h1>My Applications</h1>
+                    <p class="auth-subtitle">Track each internship you applied to and update the status as you move through the process.</p>
+                </div>
+                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
+            </section>
+
+            {% if applications %}
+            <section class="application-list">
+                {% for item in applications %}
+                <article class="intern-card application-card {% if item.timeline.rejected %}application-rejected{% endif %}">
+                    <div class="application-top">
+                        <div>
+                            <p class="preview-label">{{ item.application.internship.company }}</p>
+                            <h3>{{ item.application.internship.title }}</h3>
+                        </div>
+                        <span class="status-badge status-{{ item.timeline.status|lower }}">{{ item.timeline.status }}</span>
+                    </div>
+                    <p><strong>Location:</strong> {{ item.application.internship.location }}</p>
+                    <p><strong>Work mode:</strong> {{ item.application.internship.work_mode }}</p>
+                    <p><strong>Applied date:</strong> {{ item.application.applied_date.strftime('%d %b %Y') }}</p>
+
+                    <p class="timeline-label">Progress</p>
+                    <ol class="timeline {% if item.timeline.rejected %}timeline-rejected{% endif %}">
+                        {% for step in item.timeline.steps %}
+                            <li class="{% if step.done %}done{% endif %} {% if step.current %}current{% endif %}">{{ step.name }}</li>
+                        {% endfor %}
+                    </ol>
+                    {% if item.timeline.rejected %}
+                        <p class="rejected-note">This application is marked as Rejected.</p>
+                    {% endif %}
+
+                    <form class="status-form" method="POST" action="{{ url_for('update_application_status', application_id=item.application.id) }}">
+                        <label for="status-{{ item.application.id }}">Update status</label>
+                        <select id="status-{{ item.application.id }}" name="status">
+                            {% for status in statuses %}
+                                <option value="{{ status }}" {% if item.timeline.status == status %}selected{% endif %}>{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-small" type="submit">Save status</button>
+                    </form>
+                    <a class="btn btn-small btn-outline" href="{{ url_for('internship_detail', internship_id=item.application.internship_id) }}">View internship</a>
+                </article>
+                {% endfor %}
+            </section>
+            {% else %}
+            <section class="empty-state">
+                <h2>You haven't applied to any internships yet.</h2>
+                <p class="auth-subtitle">Open an internship detail page and click Apply Now to start tracking.</p>
+                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

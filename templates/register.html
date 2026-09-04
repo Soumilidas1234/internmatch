@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="auth-page">
+        <div class="container">
+            <section class="auth-card">
+                <p class="badge">Create Account</p>
+                <h1>Student Registration</h1>
+                <p class="auth-subtitle">Fill in your details to join InternMatch AI.</p>
+
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" value="{{ form.get('name', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="{{ form.get('email', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" minlength="6" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="education">Education</label>
+                            <input type="text" id="education" name="education" placeholder="Example: BCA" value="{{ form.get('education', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cgpa">CGPA</label>
+                            <input type="number" id="cgpa" name="cgpa" step="0.01" min="0" max="10" value="{{ form.get('cgpa', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ form.get('location', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="preferred_domain">Preferred internship domain</label>
+                            <input type="text" id="preferred_domain" name="preferred_domain" placeholder="Example: Web Development" value="{{ form.get('preferred_domain', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="preferred_work_mode">Preferred work mode</label>
+                            <select id="preferred_work_mode" name="preferred_work_mode" required>
+                                <option value="">Select work mode</option>
+                                <option value="On-site" {% if form.get('preferred_work_mode') == 'On-site' %}selected{% endif %}>On-site</option>
+                                <option value="Remote" {% if form.get('preferred_work_mode') == 'Remote' %}selected{% endif %}>Remote</option>
+                                <option value="Hybrid" {% if form.get('preferred_work_mode') == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="skills">Skills</label>
+                        <textarea id="skills" name="skills" rows="3" placeholder="Example: Python, HTML, CSS, Flask" required>{{ form.get('skills', '') }}</textarea>
+                    </div>
+                    <button class="btn" type="submit">Register</button>
+                </form>
+
+                <p class="auth-switch">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

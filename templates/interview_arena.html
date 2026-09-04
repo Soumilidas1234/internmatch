@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Arena | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">AI Interview Arena</p>
+                    <h1>Face the AI Interviewer</h1>
+                    <p class="auth-subtitle">5 live rounds. Answer one question at a time and get instant AI coach feedback.</p>
+                </div>
+            </section>
+
+            {% if not current_question and not finished %}
+            <section class="arena-stage">
+                <p class="preview-label">Choose your track</p>
+                <h2>Enter the arena</h2>
+                <p class="auth-subtitle">The AI interviewer will ask 5 internship questions based on your domain.</p>
+                <form method="POST">
+                    <input type="hidden" name="action" value="start">
+                    <div class="form-group">
+                        <label for="domain">Interview track</label>
+                        <select id="domain" name="domain">
+                            {% for domain in domains %}
+                                <option value="{{ domain }}" {% if domain == selected %}selected{% endif %}>{{ domain }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-pulse" type="submit">Start Interview</button>
+                </form>
+                <p class="auth-switch"><a href="{{ url_for('video_interview') }}">Join AI Video Call Interview instead</a></p>
+            </section>
+            {% endif %}
+
+            {% if current_question %}
+            <section class="arena-stage">
+                <div class="arena-top">
+                    <p class="badge">Round {{ question_number }} / {{ total_questions }}</p>
+                    <p class="preview-label">{{ selected }}</p>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" style="width: {{ progress }}%;"></div>
+                </div>
+                <h2>{{ current_question.q }}</h2>
+
+                {% if not feedback %}
+                <form method="POST">
+                    <input type="hidden" name="action" value="answer">
+                    <div class="form-group">
+                        <label for="answer">Your answer</label>
+                        <textarea id="answer" name="answer" rows="5" placeholder="Speak like you are in a real internship interview..." required></textarea>
+                    </div>
+                    <button class="btn" type="submit">Submit to AI Coach</button>
+                </form>
+                {% else %}
+                <article class="coach-box">
+                    <p class="preview-label">AI Coach</p>
+                    <p class="big-score">{{ feedback.score }}/100</p>
+                    <p>{{ feedback.tip }}</p>
+                    <p><strong>Your answer:</strong> {{ feedback.answer }}</p>
+                    <p><strong>Strong sample answer:</strong> {{ feedback.model }}</p>
+                </article>
+                <form method="POST">
+                    <input type="hidden" name="action" value="next">
+                    <button class="btn" type="submit">
+                        {% if question_number == total_questions %}See Final Score{% else %}Next Question{% endif %}
+                    </button>
+                </form>
+                {% endif %}
+            </section>
+            {% endif %}
+
+            {% if finished %}
+            <section class="arena-stage">
+                <p class="badge">Arena Complete</p>
+                <h2>{{ rank }}</h2>
+                <p class="big-score">{{ average }}/100</p>
+                <p class="auth-subtitle">You finished the {{ selected }} interview round.</p>
+                <form method="POST">
+                    <input type="hidden" name="action" value="restart">
+                    <button class="btn" type="submit">Play Again</button>
+                </form>
+            </section>
+
+            <section class="result-grid">
+                {% for item in report %}
+                <article class="profile-card profile-card-wide">
+                    <h3>Q{{ loop.index }}. {{ item.question }}</h3>
+                    <p>Your answer: {{ item.answer }}</p>
+                    <p>Score: {{ item.score }}/100</p>
+                    <p class="match-note">{{ item.tip }}</p>
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

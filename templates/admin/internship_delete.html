@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% block title %}Delete internship{% endblock %}
+{% block heading %}Delete internship{% endblock %}
+{% block content %}
+<section class="admin-panel">
+    <h3>{{ internship.title }}</h3>
+    <p class="auth-subtitle">{{ internship.company }} · {{ internship.location }}</p>
+    <p>This will permanently remove the internship from InternMatch AI.</p>
+    {% if related %}
+    <p class="alert alert-error">{{ related }} related application{{ 's' if related != 1 else '' }} will also be deleted.</p>
+    {% endif %}
+    <form method="POST" class="admin-actions">
+        <button class="btn btn-danger" type="submit">Yes, delete internship</button>
+        <a class="btn btn-outline" href="{{ url_for('admin.internships') }}">Cancel</a>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="empty-state">
+                <p class="badge">{{ badge }}</p>
+                <h1>{{ heading }}</h1>
+                <p class="auth-subtitle">{{ message }}</p>
+                <a class="btn" href="{{ url_for(home_endpoint) }}">{{ button }}</a>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

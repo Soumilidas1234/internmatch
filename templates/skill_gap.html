@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Gap | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Skill Gap Analyzer</p>
+                    <h1>Skills to improve</h1>
+                    <p class="auth-subtitle">These missing skills come from your top internship matches. They are a learning guide, not a hiring decision.</p>
+                </div>
+                <a class="btn" href="{{ url_for('recommendations') }}">View recommendations</a>
+            </section>
+
+            {% if need_skills %}
+            <section class="empty-state">
+                <h2>Complete your profile first</h2>
+                <p class="auth-subtitle">No suitable internships found yet. Complete your profile and upload your resume to improve recommendations.</p>
+                <a class="btn" href="{{ url_for('profile') }}">Update profile</a>
+                <a class="btn btn-outline" href="{{ url_for('resume_analyzer') }}">Upload resume</a>
+            </section>
+            {% elif not internships_available %}
+            <section class="empty-state">
+                <h2>No internships available</h2>
+                <p class="auth-subtitle">Add internships to the local database to see skill gaps.</p>
+                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
+            </section>
+            {% elif skill_gaps %}
+            <section class="gap-panel">
+                <p>
+                    {% for skill in skill_gaps %}
+                    <span class="skill-missing">⚠ {{ skill }}</span>
+                    {% endfor %}
+                </p>
+                <a class="btn btn-small" href="{{ url_for('career_roadmap') }}">Open career roadmap</a>
+            </section>
+            {% if top_matches %}
+            <section class="intern-grid">
+                {% for item in top_matches %}
+                <article class="intern-card match-card">
+                    <div class="score-badge score-{{ item.score_class }}">
+                        <span>{{ item.final_score }}% Match</span>
+                        <small>{{ item.label }}</small>
+                    </div>
+                    <h3>{{ item.internship.title }}</h3>
+                    <p class="preview-label">{{ item.internship.company }}</p>
+                    <p><strong>Matching skills:</strong></p>
+                    <p>
+                        {% for skill in item.matched_skills %}
+                            <span class="skill-ok">✓ {{ skill }}</span>
+                        {% else %}
+                            <span>No matching skills found.</span>
+                        {% endfor %}
+                    </p>
+                    <p><strong>Missing skills:</strong></p>
+                    <p>
+                        {% for skill in item.missing_skills %}
+                            <span class="skill-missing">⚠ {{ skill }}</span>
+                        {% else %}
+                            <span>No missing required skills.</span>
+                        {% endfor %}
+                    </p>
+                    <p class="match-note">{{ item.why }}</p>
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
+            {% else %}
+            <section class="empty-state">
+                <h2>No matching skills found.</h2>
+                <p class="auth-subtitle">No suitable internships found yet. Complete your profile and upload your resume to improve recommendations.</p>
+                <a class="btn" href="{{ url_for('profile') }}">Update profile</a>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

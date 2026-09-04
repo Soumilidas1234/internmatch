@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ form_title }}{% endblock %}
+{% block heading %}{{ form_title }}{% endblock %}
+{% block content %}
+<section class="admin-panel">
+    <form method="POST" class="admin-form">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="company">Company</label>
+                <input id="company" name="company" value="{{ internship.company or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input id="title" name="title" value="{{ internship.title or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input id="location" name="location" value="{{ internship.location or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="work_mode">Work mode</label>
+                <select id="work_mode" name="work_mode" required>
+                    {% for mode in work_modes %}
+                    <option value="{{ mode }}" {% if internship.work_mode == mode %}selected{% endif %}>{{ mode }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="duration">Duration</label>
+                <input id="duration" name="duration" value="{{ internship.duration or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="stipend">Stipend</label>
+                <input id="stipend" name="stipend" value="{{ internship.stipend or '' }}" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="required_skills">Required skills</label>
+            <input id="required_skills" name="required_skills" value="{{ internship.required_skills or '' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="5" required>{{ internship.description or '' }}</textarea>
+        </div>
+        <div class="admin-actions">
+            <button class="btn" type="submit">Save internship</button>
+            <a class="btn btn-outline" href="{{ url_for('admin.internships') }}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

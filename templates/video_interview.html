@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Interview | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Live Call</p>
+                    <h1>AI Video Interview</h1>
+                    <p class="auth-subtitle">Join a local video call with an AI interviewer. Your camera stays on this computer.</p>
+                </div>
+            </section>
+
+            <section id="lobby" class="arena-stage">
+                <p class="preview-label">Ready to join?</p>
+                <h2>Start a video interview</h2>
+                <p class="auth-subtitle">Allow camera and microphone when the browser asks. You can still type answers if speech is not available.</p>
+                <div class="form-group">
+                    <label for="domain">Interview track</label>
+                    <select id="domain">
+                        {% for domain in domains %}
+                            <option value="{{ domain }}" {% if domain == selected %}selected{% endif %}>{{ domain }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button class="btn btn-pulse" id="joinBtn" type="button">Join Video Call</button>
+                <p id="lobbyStatus" class="match-note"></p>
+            </section>
+
+            <section id="callScreen" class="call-screen hidden">
+                <div class="call-grid">
+                    <article class="call-tile ai-tile" id="aiTile">
+                        <img src="{{ url_for('static', filename='images/ai-interviewer.png') }}" alt="AI interviewer">
+                        <div class="call-name">Priya · AI Interviewer</div>
+                        <p class="speaking-label" id="aiSpeaking">Connecting...</p>
+                    </article>
+                    <article class="call-tile you-tile">
+                        <video id="userVideo" autoplay playsinline muted></video>
+                        <div class="camera-off hidden" id="cameraOff">Camera off</div>
+                        <div class="call-name">{{ user.name }} · You</div>
+                    </article>
+                </div>
+
+                <p class="call-question" id="questionText">The AI interviewer will ask the first question.</p>
+                <div class="progress-track">
+                    <div class="progress-fill" id="callProgress" style="width: 0%;"></div>
+                </div>
+
+                <textarea id="answerBox" class="call-answer" rows="3" placeholder="Speak your answer, or type it here..."></textarea>
+
+                <div class="call-controls">
+                    <button class="call-btn" id="micBtn" type="button">🎙️ Speak</button>
+                    <button class="call-btn" id="cameraBtn" type="button">📷 Camera</button>
+                    <button class="btn" id="submitBtn" type="button">Send Answer</button>
+                    <button class="call-btn end-btn" id="endBtn" type="button">End Call</button>
+                </div>
+                <p id="callStatus" class="match-note"></p>
+            </section>
+
+            <section id="resultScreen" class="arena-stage hidden">
+                <p class="badge">Call Ended</p>
+                <h2 id="finalRank">Interview complete</h2>
+                <p class="big-score" id="finalScore">0/100</p>
+                <p class="auth-subtitle">Thanks for attending the AI video interview.</p>
+                <div id="resultList"></div>
+                <a class="btn" href="{{ url_for('video_interview') }}">Join Again</a>
+            </section>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/video_interview.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin{% endblock %} | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <a class="logo admin-logo" href="{{ url_for('admin.dashboard') }}">InternMatch <span>Admin</span></a>
+            <nav>
+                <a class="{% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+                <a class="{% if active_page == 'students' %}active{% endif %}" href="{{ url_for('admin.students') }}">Students</a>
+                <a class="{% if active_page == 'internships' %}active{% endif %}" href="{{ url_for('admin.internships') }}">Internships</a>
+                <a class="{% if active_page == 'applications' %}active{% endif %}" href="{{ url_for('admin.applications') }}">Applications</a>
+            </nav>
+            <div class="admin-sidebar-foot">
+                <p>{{ admin.name }}</p>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </aside>
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <h1>{% block heading %}Admin{% endblock %}</h1>
+                <p>Local InternMatch AI control panel</p>
+            </header>
+            <div class="admin-content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <p class="alert alert-{{ category }}">{{ message }}</p>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

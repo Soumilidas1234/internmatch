@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internships | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">Sample Dataset</p>
+                    <h1>Internship Listings</h1>
+                    <p class="auth-subtitle">Realistic sample internships for practice. Log in to apply and track your applications.</p>
+                </div>
+            </section>
+
+            <form class="filter-bar" method="GET" action="{{ url_for('internships') }}">
+                <input type="text" name="q" value="{{ search }}" placeholder="Search title, company, or skills">
+                <select name="domain">
+                    <option value="">All domains</option>
+                    {% for domain in domains %}
+                        <option value="{{ domain }}" {% if domain == selected_domain %}selected{% endif %}>{{ domain }}</option>
+                    {% endfor %}
+                </select>
+                <select name="location">
+                    <option value="">All locations</option>
+                    {% for location in locations %}
+                        <option value="{{ location }}" {% if location == selected_location %}selected{% endif %}>{{ location }}</option>
+                    {% endfor %}
+                </select>
+                <select name="work_mode">
+                    <option value="">All work modes</option>
+                    {% for mode in work_modes %}
+                        <option value="{{ mode }}" {% if mode == selected_work_mode %}selected{% endif %}>{{ mode }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-small" type="submit">Filter</button>
+                <a class="btn btn-small btn-outline" href="{{ url_for('internships') }}">Reset</a>
+            </form>
+
+            <p class="auth-subtitle">Showing {{ total }} internship{{ '' if total == 1 else 's' }}.</p>
+
+            {% if internships %}
+            <section class="intern-grid">
+                {% for item in internships %}
+                <article class="intern-card">
+                    <p class="preview-label">{{ item.company }}</p>
+                    <h3>{{ item.title }}</h3>
+                    <p><strong>Location:</strong> {{ item.location }}</p>
+                    <p><strong>Work mode:</strong> {{ item.work_mode }}</p>
+                    <p><strong>Duration:</strong> {{ item.duration }}</p>
+                    <p><strong>Stipend:</strong> {{ item.stipend }}</p>
+                    <p><strong>Skills:</strong> {{ item.required_skills }}</p>
+                    <a class="btn btn-small" href="{{ url_for('internship_detail', internship_id=item.id) }}">View details</a>
+                    <a class="btn btn-small btn-outline" href="{{ url_for('internship_detail', internship_id=item.id) }}#apply">How to apply</a>
+                </article>
+                {% endfor %}
+            </section>
+            {% else %}
+            <section class="empty-state">
+                {% if has_filters %}
+                <h2>No internships found</h2>
+                <p class="auth-subtitle">No listings match these filters. Clear them to see all internships.</p>
+                <a class="btn" href="{{ url_for('internships') }}">Reset filters</a>
+                {% else %}
+                <h2>No internships available</h2>
+                <p class="auth-subtitle">If this is your first time, import the sample CSV with <strong>python import_internships.py</strong>.</p>
+                {% endif %}
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

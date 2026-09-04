@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Best Internships | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">AI Matching</p>
+                    <h1>Your best internship matches</h1>
+                    <p class="auth-subtitle">Scores are based on skills, resume/profile text, domain, location, work mode, and education. This does not guarantee selection.</p>
+                </div>
+            </section>
+
+            {% if need_resume %}
+            <section class="empty-state">
+                <h2>No suitable internships found yet</h2>
+                <p class="auth-subtitle">Complete your profile and upload your resume to improve recommendations.</p>
+                <a class="btn" href="{{ url_for('resume_analyzer') }}">Analyze Resume</a>
+            </section>
+            {% elif not internships_available %}
+            <section class="empty-state">
+                <h2>No internships found</h2>
+                <p class="auth-subtitle">Import the sample dataset first with <strong>python import_internships.py</strong>.</p>
+                <a class="btn" href="{{ url_for('internships') }}">Browse internships</a>
+            </section>
+            {% elif not recommendations %}
+            <section class="empty-state">
+                <h2>No suitable internships found yet</h2>
+                <p class="auth-subtitle">Complete your profile and upload your resume to improve recommendations.</p>
+                <a class="btn" href="{{ url_for('profile') }}">Update profile</a>
+            </section>
+            {% else %}
+            <section class="intern-grid">
+                {% for item in recommendations %}
+                <article class="intern-card match-card">
+                    <div class="score-badge score-{{ item.score_class }}">
+                        <span>🎯 {{ item.final_score }}% Match</span>
+                        <small>{{ item.label }}</small>
+                    </div>
+                    <h3>{{ item.internship.title }}</h3>
+                    <p class="preview-label">{{ item.internship.company }}</p>
+                    <p><strong>Skills:</strong></p>
+                    <p>
+                        {% for skill in item.matched_skills %}
+                            <span class="skill-ok">✓ {{ skill }}</span>
+                        {% endfor %}
+                        {% if not item.matched_skills %}
+                            <span>No matching skills found.</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Missing:</strong></p>
+                    <p>
+                        {% for skill in item.missing_skills %}
+                            <span class="skill-missing">⚠ {{ skill }}</span>
+                        {% endfor %}
+                        {% if not item.missing_skills %}
+                            <span>No missing required skills.</span>
+                        {% endif %}
+                    </p>
+                    <p class="match-note">Why this matches: {{ item.why }}</p>
+                    <p class="score-breakdown">
+                        Skills {{ item.skill_score }}% · Text {{ item.text_similarity_score }}% ·
+                        Domain {{ 'Yes' if item.domain_match else 'No' }} ·
+                        Location/Mode {{ 'Yes' if item.location_work_mode_match else 'No' }} ·
+                        Education {{ 'Yes' if item.education_match else 'No' }}
+                    </p>
+                    <a class="btn btn-small" href="{{ url_for('internship_detail', internship_id=item.internship.id) }}">View Internship</a>
+                </article>
+                {% endfor %}
+            </section>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

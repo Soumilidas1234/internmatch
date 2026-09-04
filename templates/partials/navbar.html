@@ -1,0 +1,46 @@
+<header class="navbar">
+    <div class="container nav-inner">
+        <a class="logo" href="{{ url_for('home') }}">InternMatch <span>AI</span></a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" tabindex="-1">
+        <label class="nav-toggle-label" for="nav-toggle">Menu</label>
+        <nav>
+            {% if is_admin %}
+                <a class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+                <a class="{% if request.endpoint == 'admin.students' %}active{% endif %}" href="{{ url_for('admin.students') }}">Students</a>
+                <a class="{% if request.endpoint == 'admin.internships' %}active{% endif %}" href="{{ url_for('admin.internships') }}">Internships</a>
+                <a class="{% if request.endpoint == 'admin.applications' %}active{% endif %}" href="{{ url_for('admin.applications') }}">Applications</a>
+            {% elif nav_user %}
+                <a class="{% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="{% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}">Profile</a>
+                <a class="{% if request.endpoint == 'internships' %}active{% endif %}" href="{{ url_for('internships') }}">Internships</a>
+                <a class="{% if request.endpoint == 'recommendations' %}active{% endif %}" href="{{ url_for('recommendations') }}">Recommendations</a>
+                <a class="{% if request.endpoint == 'skill_gap' %}active{% endif %}" href="{{ url_for('skill_gap') }}">Skill Gap</a>
+                <a class="{% if request.endpoint == 'my_applications' %}active{% endif %}" href="{{ url_for('my_applications') }}">Applications</a>
+            {% else %}
+                {% if request.endpoint == 'home' %}
+                    <a href="#features">Features</a>
+                    <a href="#ai-tools">AI Tools</a>
+                    <a href="#how-it-works">How It Works</a>
+                {% else %}
+                    <a href="{{ url_for('home') }}">Home</a>
+                {% endif %}
+                <a class="{% if request.endpoint == 'internships' %}active{% endif %}" href="{{ url_for('internships') }}">Internships</a>
+                <a class="{% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Login</a>
+            {% endif %}
+        </nav>
+        {% if nav_user %}
+            <a class="btn btn-small btn-outline" href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+            <a class="btn btn-small" href="{{ url_for('register') }}">Get Started</a>
+        {% endif %}
+    </div>
+</header>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container flash-wrap">
+        {% for category, message in messages %}
+            <p class="alert alert-{{ category }}">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}

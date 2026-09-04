@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main>
+        <section class="hero" id="get-started">
+            <div class="container hero-grid">
+                <div class="hero-text fade-in">
+                    <p class="badge">Smart Internship Matching</p>
+                    <h1>InternMatch AI</h1>
+                    <p class="tagline">Find internships that match your skills.</p>
+                    <p class="hero-desc">
+                        Discover opportunities that fit your strengths, interests, and goals.
+                        InternMatch AI helps students connect with the right internships faster.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn btn-pulse" href="{{ url_for('register') }}">Get Started</a>
+                        <a class="btn btn-outline" href="#how-it-works">See How It Works</a>
+                    </div>
+                    <div class="hero-stats">
+                        <div>
+                            <strong>100+</strong>
+                            <span>Internship Ideas</span>
+                        </div>
+                        <div>
+                            <strong>Smart</strong>
+                            <span>Skill Matching</span>
+                        </div>
+                        <div>
+                            <strong>Simple</strong>
+                            <span>Student Friendly</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-visual fade-in delay-1">
+                    <img class="hero-photo"
+                         src="{{ url_for('static', filename='images/hero-students.png') }}"
+                         alt="Students searching for internships together">
+                    <div class="preview-card float-card">
+                        <p class="preview-label">Match Preview</p>
+                        <h3>Recommended for you</h3>
+                        <div class="match-item">
+                            <div>
+                                <h4>Web Development Intern</h4>
+                                <p>HTML · CSS · Python</p>
+                            </div>
+                            <span class="match-score">92%</span>
+                        </div>
+                        <div class="match-item">
+                            <div>
+                                <h4>Data Analysis Intern</h4>
+                                <p>Python · Excel · SQL</p>
+                            </div>
+                            <span class="match-score">88%</span>
+                        </div>
+                        <div class="match-item">
+                            <div>
+                                <h4>UI/UX Design Intern</h4>
+                                <p>Figma · Design · Research</p>
+                            </div>
+                            <span class="match-score">84%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ratings" aria-label="App ratings">
+            <div class="ratings-track">
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">4.9</p>
+                    <p>Helped me find internships that actually match my skills.</p>
+                    <span>Aarav · BCA Student</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">4.8</p>
+                    <p>Simple, clean, and perfect for students starting out.</p>
+                    <span>Meera · Computer Science</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">5.0</p>
+                    <p>The matching idea is exactly what internship search needed.</p>
+                    <span>Rohan · Final Year</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★☆</p>
+                    <p class="rating-score">4.7</p>
+                    <p>Saved time instead of scrolling through random listings.</p>
+                    <span>Ananya · BCA</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">4.9</p>
+                    <p>Loved how easy it was to create a profile and get started.</p>
+                    <span>Ishaan · Student</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">4.8</p>
+                    <p>A useful project for students looking for better internship fits.</p>
+                    <span>Diya · BCA Student</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">4.9</p>
+                    <p>Helped me find internships that actually match my skills.</p>
+                    <span>Aarav · BCA Student</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">4.8</p>
+                    <p>Simple, clean, and perfect for students starting out.</p>
+                    <span>Meera · Computer Science</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">5.0</p>
+                    <p>The matching idea is exactly what internship search needed.</p>
+                    <span>Rohan · Final Year</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★☆</p>
+                    <p class="rating-score">4.7</p>
+                    <p>Saved time instead of scrolling through random listings.</p>
+                    <span>Ananya · BCA</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">4.9</p>
+                    <p>Loved how easy it was to create a profile and get started.</p>
+                    <span>Ishaan · Student</span>
+                </article>
+                <article class="rating-card">
+                    <p class="stars">★★★★★</p>
+                    <p class="rating-score">4.8</p>
+                    <p>A useful project for students looking for better internship fits.</p>
+                    <span>Diya · BCA Student</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="need" id="need">
+            <div class="container need-grid">
+                <div class="need-copy fade-in">
+                    <p class="section-eyebrow">The Need</p>
+                    <h2>Students spend hours searching, but still miss the right internships.</h2>
+                    <p>
+                        Many students apply to roles that do not match their skills, location,
+                        or work mode. InternMatch AI is built to solve that problem by focusing
+                        on better matches, not longer search lists.
+                    </p>
+                </div>
+                <img class="need-photo fade-in delay-1"
+                     src="{{ url_for('static', filename='images/need-search.png') }}"
+                     alt="Student searching through many internship listings">
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-eyebrow">Why InternMatch AI</p>
+                    <h2>Built to help students find better fits</h2>
+                    <p>A clean, focused platform designed for your BCA final-year project journey.</p>
+                </div>
+                <div class="feature-grid">
+                    <article class="feature-card">
+                        <img src="{{ url_for('static', filename='images/skill-match.png') }}" alt="Skills matching internships on a laptop">
+                        <div class="icon">🎯</div>
+                        <h3>Skill-Based Matching</h3>
+                        <p>Match internships with the skills you already have and the ones you want to grow.</p>
+                    </article>
+                    <article class="feature-card">
+                        <img src="{{ url_for('static', filename='images/need-search.png') }}" alt="Student reviewing internship options">
+                        <div class="icon">⚡</div>
+                        <h3>Fast Recommendations</h3>
+                        <p>Get clear suggestions quickly so you spend less time searching and more time applying.</p>
+                    </article>
+                    <article class="feature-card">
+                        <img src="{{ url_for('static', filename='images/internship-office.png') }}" alt="Student intern working with a mentor">
+                        <div class="icon">🎓</div>
+                        <h3>Student Focused</h3>
+                        <p>Designed for learners who want practical internship options with a simple experience.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="features" id="ai-tools">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-eyebrow">AI Tools</p>
+                    <h2>Five local tools for internship success</h2>
+                    <p>Log in to use Resume Analyzer, Career Roadmap, Scam Detector, Interview Arena, and Project Recommendations.</p>
+                </div>
+                <div class="feature-grid tools-grid">
+                    <a class="ai-tool-card" href="{{ url_for('resume_analyzer') }}">
+                        <div class="icon">📄</div>
+                        <h3>AI Resume Analyzer</h3>
+                        <p>Find skills, gaps, and resume improvements.</p>
+                    </a>
+                    <a class="ai-tool-card" href="{{ url_for('career_roadmap') }}">
+                        <div class="icon">🗺️</div>
+                        <h3>Career Roadmap</h3>
+                        <p>Follow a clear path from beginner to internship-ready.</p>
+                    </a>
+                    <a class="ai-tool-card" href="{{ url_for('scam_detector') }}">
+                        <div class="icon">🛡️</div>
+                        <h3>Scam Detector</h3>
+                        <p>Check fake internship offers before you apply.</p>
+                    </a>
+                    <a class="ai-tool-card" href="{{ url_for('video_interview') }}">
+                        <div class="icon">📹</div>
+                        <h3>AI Video Interview</h3>
+                        <p>Join a live video call with an AI interviewer.</p>
+                    </a>
+                    <a class="ai-tool-card" href="{{ url_for('interview_arena') }}">
+                        <div class="icon">🎤</div>
+                        <h3>Interview AI Arena</h3>
+                        <p>Practice answers and get an instant score.</p>
+                    </a>
+                    <a class="ai-tool-card" href="{{ url_for('project_recommendations') }}">
+                        <div class="icon">💡</div>
+                        <h3>Project Recommendations</h3>
+                        <p>Get project ideas that match your skills.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="how" id="how-it-works">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-eyebrow">Simple Process</p>
+                    <h2>How it works</h2>
+                    <p>Three easy steps from profile to internship match.</p>
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <h3>Add Your Skills</h3>
+                        <p>Share what you know, from programming and design to communication and tools.</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <h3>Get Matches</h3>
+                        <p>InternMatch AI compares your profile with internship opportunities.</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <h3>Apply Smarter</h3>
+                        <p>Focus on the roles that fit you best and move forward with confidence.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about" id="about">
+            <div class="container about-box">
+                <img class="about-photo"
+                     src="{{ url_for('static', filename='images/internship-office.png') }}"
+                     alt="Student starting an internship in a modern office">
+                <div>
+                    <p class="section-eyebrow">About the Project</p>
+                    <h2>Your AI-powered internship companion</h2>
+                    <p>
+                        InternMatch AI is a local web project that aims to make internship discovery
+                        easier for students. This first version focuses on a clean homepage experience.
+                        More features will be added step by step.
+                    </p>
+                </div>
+                <a class="btn btn-pulse" href="{{ url_for('register') }}">Get Started</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-inner">
+            <p><strong>InternMatch AI</strong> — Find internships that match your skills.</p>
+            <p class="footer-note">Built as a BCA final-year project · Running locally</p>
+        </div>
+    </footer>
+</body>
+</html>

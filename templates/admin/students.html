@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% block title %}Students{% endblock %}
+{% block heading %}Student Management{% endblock %}
+{% block content %}
+<section class="admin-panel">
+    <div class="admin-panel-head">
+        <h3>Registered students</h3>
+        <p>{{ students|length }} student{{ 's' if students|length != 1 else '' }}</p>
+    </div>
+    {% if students %}
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Education</th>
+                    <th>CGPA</th>
+                    <th>Preferred Domain</th>
+                    <th>Work Mode</th>
+                    <th>Skills</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.education or '-' }}</td>
+                    <td>{{ student.cgpa if student.cgpa is not none else '-' }}</td>
+                    <td>{{ student.preferred_domain or '-' }}</td>
+                    <td>{{ student.preferred_work_mode or '-' }}</td>
+                    <td>{{ student.skills or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="admin-empty">No students available.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Recommendations | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">AI Tool</p>
+                    <h1>Project Recommendations</h1>
+                    <p class="auth-subtitle">Build these projects to match internships in {{ selected }}.</p>
+                </div>
+            </section>
+
+            <section class="auth-card">
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="extra_skills">Add extra skills (optional)</label>
+                        <input type="text" id="extra_skills" name="extra_skills" value="{{ extra_skills }}" placeholder="Example: React, Git, Pandas">
+                    </div>
+                    <button class="btn" type="submit">Refresh Recommendations</button>
+                </form>
+            </section>
+
+            <section class="feature-grid">
+                {% for project in projects %}
+                <article class="feature-card tool-result-card">
+                    <div class="icon">💡</div>
+                    <h3>{{ project.title }}</h3>
+                    <p><strong>{{ project.domain }}</strong> · {{ project.level }}</p>
+                    <p>Skills: {{ project.skills | join(', ') }}</p>
+                    <p>{{ project.why }}</p>
+                    <p class="match-note">Match score: {{ project.match_score }}%
+                        {% if project.overlap %} · You have {{ project.overlap | join(', ') }}{% endif %}
+                    </p>
+                </article>
+                {% endfor %}
+            </section>
+        </div>
+    </main>
+</body>
+</html>

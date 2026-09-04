@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ internship.title }} | InternMatch AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include "partials/navbar.html" %}
+
+    <main class="dashboard-page">
+        <div class="container">
+            <section class="dashboard-header">
+                <div>
+                    <p class="badge">{{ domain }}</p>
+                    <h1>{{ internship.title }}</h1>
+                    <p class="auth-subtitle">{{ internship.company }} · Realistic sample listing for this academic project.</p>
+                </div>
+                {% if already_applied %}
+                    <span class="btn btn-disabled">Already Applied</span>
+                {% elif session.get('user_id') %}
+                    <form method="POST" action="{{ url_for('apply_internship', internship_id=internship.id) }}">
+                        <button class="btn btn-pulse" type="submit">Apply Now</button>
+                    </form>
+                {% else %}
+                    <a class="btn btn-pulse" href="{{ url_for('login') }}">Login to apply</a>
+                {% endif %}
+            </section>
+
+            <section class="profile-grid">
+                <article class="profile-card">
+                    <h3>Company</h3>
+                    <p>{{ internship.company }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Location</h3>
+                    <p>{{ internship.location }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Work mode</h3>
+                    <p>{{ internship.work_mode }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Duration</h3>
+                    <p>{{ internship.duration }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Stipend</h3>
+                    <p>{{ internship.stipend }}</p>
+                </article>
+                <article class="profile-card">
+                    <h3>Required skills</h3>
+                    <p>{{ internship.required_skills }}</p>
+                </article>
+                <article class="profile-card profile-card-wide">
+                    <h3>About this internship</h3>
+                    <p>{{ internship.description }}</p>
+                </article>
+            </section>
+
+            <section class="apply-box" id="apply">
+                <p class="section-eyebrow">How to apply</p>
+                <h2>Apply like a real internship process</h2>
+                <ol class="apply-steps">
+                    <li>Read the role, location, work mode, and required skills.</li>
+                    <li>Update your InternMatch profile: education, CGPA, skills, and preferred domain.</li>
+                    <li>Keep a simple resume ready with projects and tools you have used.</li>
+                    <li>Log in and click <strong>Apply Now</strong>. Your profile is stored with the application.</li>
+                    <li>Track the status on <strong>My Applications</strong>. New applications start as Applied.</li>
+                </ol>
+                <p class="auth-subtitle">Your application is stored locally in SQLite. These listings are realistic practice openings, not live company vacancies.</p>
+
+                {% if already_applied %}
+                    <p class="alert alert-success">Already Applied</p>
+                    <span class="btn btn-disabled">Already Applied</span>
+                    <a class="btn" href="{{ url_for('my_applications') }}">My Applications</a>
+                {% elif session.get('user_id') %}
+                    <form method="POST" action="{{ url_for('apply_internship', internship_id=internship.id) }}">
+                        <button class="btn btn-pulse" type="submit">Apply Now</button>
+                    </form>
+                {% else %}
+                    <a class="btn btn-pulse" href="{{ url_for('login') }}">Login to apply</a>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+</body>
+</html>
