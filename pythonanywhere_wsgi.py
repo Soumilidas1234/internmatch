@@ -1,16 +1,26 @@
-# Copy this into the PythonAnywhere WSGI file (Web tab → WSGI configuration).
-# Replace YOUR_USERNAME with your PythonAnywhere username.
+# WSGI file used on PythonAnywhere (account InternMatch).
+# Web tab → WSGI configuration file.
 
+import glob
 import os
 import sys
 
-from dotenv import load_dotenv
-
-project_home = "/home/YOUR_USERNAME/internmatch"
-if project_home not in sys.path:
-    sys.path.insert(0, project_home)
+project_home = "/home/InternMatch/internmatch"
+packages = glob.glob(project_home + "/venv/lib/python*/site-packages")
+for path in packages + [project_home]:
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
 os.chdir(project_home)
-load_dotenv(os.path.join(project_home, ".env"))
+
+env_path = os.path.join(project_home, ".env")
+if os.path.isfile(env_path):
+    with open(env_path) as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            os.environ.setdefault(key.strip(), val.strip())
 
 from app import app as application

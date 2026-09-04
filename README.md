@@ -8,6 +8,8 @@ The platform analyzes a resume, estimates role readiness, finds skill gaps, rebu
 
 This is a final-year academic project. **Readiness, exam, and resume scores are practice estimates. They do not guarantee a job or internship.**
 
+**Live site:** [https://internmatch.pythonanywhere.com](https://internmatch.pythonanywhere.com)
+
 **Source code:** [https://github.com/Soumilidas1234/internmatch](https://github.com/Soumilidas1234/internmatch)
 
 ---
@@ -28,7 +30,7 @@ Then open **http://127.0.0.1:5000/**
 
 Use that login to try resume analysis, **Fix Resume** (PDF download), role readiness, skill gap, the 14-day plan, the AI examiner, mock interview, and progress.
 
-The admin password is not on the website. Set it as `ADMIN_PASSWORD` in the local `.env` file, or in a `.env` file on PythonAnywhere if the site is live.
+The public demo is at **https://internmatch.pythonanywhere.com**. The admin password is not on the website. Set it as `ADMIN_PASSWORD` in `.env` on PythonAnywhere.
 
 ---
 
@@ -36,9 +38,9 @@ The admin password is not on the website. Set it as `ADMIN_PASSWORD` in the loca
 
 Render often asks you to pay or add a card. Use **PythonAnywhere Beginner** instead: **$0 / month, no credit card**.
 
-Your public URL will look like:
+Your public URL is:
 
-`https://YOUR_USERNAME.pythonanywhere.com`
+**https://internmatch.pythonanywhere.com**
 
 ### Step 1 — Create a free account
 
@@ -91,19 +93,21 @@ On the Web tab:
 1. **Virtualenv** — enter:
 
 ```text
-/home/YOUR_USERNAME/internmatch/venv
+/home/InternMatch/internmatch/venv
 ```
 
-2. **WSGI configuration file** — click the file path, delete the sample code, paste the contents of `pythonanywhere_wsgi.py` from the repo, and change `YOUR_USERNAME` to your PythonAnywhere username.
+2. **Source code** and **Working directory:** `/home/InternMatch/internmatch`
 
-3. Click **Reload** at the top of the Web tab.
+3. **WSGI configuration file** — paste `pythonanywhere_wsgi.py` from this repo.
 
-4. Open `https://YOUR_USERNAME.pythonanywhere.com`
+4. Click **Reload** at the top of the Web tab.
+
+5. Open **https://internmatch.pythonanywhere.com**
 
 ### Step 5 — Logins
 
 - Student: `demo.student@internmatch.local` / `Demo@123`
-- Admin: `https://YOUR_USERNAME.pythonanywhere.com/admin/login` with your `ADMIN_PASSWORD`
+- Admin: https://internmatch.pythonanywhere.com/admin/login with your `ADMIN_PASSWORD`
 
 ### Free-plan notes
 
