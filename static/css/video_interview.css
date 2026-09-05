@@ -63,10 +63,17 @@ body.video-interview-page .you-tile.snapshot-preview #userCanvas {
     display: block;
 }
 
-body.video-interview-page .call-name,
-body.video-interview-page .speaking-label,
 body.video-interview-page .camera-off {
-    z-index: 2;
+    z-index: 3;
+    left: 16px;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    line-height: 1.4;
     background: #111827;
     color: #F8FAFC;
 }

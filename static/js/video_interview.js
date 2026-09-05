@@ -159,7 +159,7 @@ async function startCamera() {
     } catch (error) {
         cameraOff.classList.remove("hidden");
         cameraOn = false;
-        setStatus("Camera permission was denied. You can still continue with typed answers.");
+        setStatus("Chrome blocked the camera. Click the camera icon in the address bar, choose Allow, then click Camera. You can still type answers.");
     }
 }
 
