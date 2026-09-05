@@ -1,4 +1,10 @@
-/* Camera preview is a canvas. The live <video> stays off-screen. */
+/* Normal camera preview. Avoid GPU color-conversion glitches. */
+
+html.video-interview-page,
+body.video-interview-page {
+    overflow-x: visible !important;
+    color-scheme: normal;
+}
 
 body.video-interview-page .dashboard-page {
     background: #F7F9FC !important;
@@ -15,18 +21,6 @@ body.video-interview-page .call-screen {
     transform: none !important;
 }
 
-body.video-interview-page .camera-source {
-    position: fixed;
-    left: -10000px;
-    top: 0;
-    width: 640px;
-    height: 480px;
-    opacity: 1;
-    pointer-events: none;
-    filter: none !important;
-    transform: none !important;
-}
-
 body.video-interview-page .you-tile {
     position: relative;
     background: #111827;
@@ -37,15 +31,36 @@ body.video-interview-page .you-tile {
     transform: none !important;
 }
 
-body.video-interview-page #userCanvas {
+body.video-interview-page #userVideo {
     display: block;
     width: 100%;
     height: 320px;
+    object-fit: contain;
     background: #111827;
     border: 0;
-    border-radius: 12px;
     filter: none !important;
     transform: none !important;
+    mix-blend-mode: normal;
+}
+
+body.video-interview-page #userCanvas {
+    display: none;
+    width: 100%;
+    height: 320px;
+    background: #111827;
+}
+
+body.video-interview-page .you-tile.snapshot-preview #userVideo {
+    position: absolute;
+    width: 320px;
+    height: 240px;
+    left: -10000px;
+    top: 0;
+    opacity: 1;
+}
+
+body.video-interview-page .you-tile.snapshot-preview #userCanvas {
+    display: block;
 }
 
 body.video-interview-page .call-name,

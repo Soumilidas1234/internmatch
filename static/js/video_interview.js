@@ -6,9 +6,11 @@ const joinBtn = document.getElementById("joinBtn");
 const domainSelect = document.getElementById("domain");
 const userVideo = document.getElementById("userVideo");
 const userCanvas = document.getElementById("userCanvas");
+const youTile = document.getElementById("youTile");
 const cameraOff = document.getElementById("cameraOff");
 const previewCtx = userCanvas ? userCanvas.getContext("2d", { alpha: false }) : null;
-let previewRaf = 0;
+let previewTimer = 0;
+let imageCapture = null;
 const questionText = document.getElementById("questionText");
 const answerBox = document.getElementById("answerBox");
 const callStatus = document.getElementById("callStatus");
@@ -74,74 +76,79 @@ function sizePreview() {
     }
 }
 
-function schedulePreview() {
-    if (userVideo && typeof userVideo.requestVideoFrameCallback === "function") {
-        previewRaf = userVideo.requestVideoFrameCallback(function () {
-            paintPreview();
-        });
-        return;
-    }
-    previewRaf = window.requestAnimationFrame(paintPreview);
-}
-
-function paintPreview() {
+function drawBitmap(bitmap) {
     if (!previewCtx || !userCanvas) {
         return;
     }
+    sizePreview();
     const canvasW = userCanvas.width;
     const canvasH = userCanvas.height;
     previewCtx.fillStyle = "#111827";
     previewCtx.fillRect(0, 0, canvasW, canvasH);
-
-    const videoW = userVideo.videoWidth;
-    const videoH = userVideo.videoHeight;
-    if (cameraOn && videoW > 1 && videoH > 1) {
-        const crop = Math.max(4, Math.round(videoH * 0.06));
-        const sourceH = videoH - crop;
-        const scale = Math.min(canvasW / videoW, canvasH / sourceH);
-        const drawW = videoW * scale;
-        const drawH = sourceH * scale;
-        const drawX = (canvasW - drawW) / 2;
-        const drawY = (canvasH - drawH) / 2;
-        previewCtx.drawImage(userVideo, 0, 0, videoW, sourceH, drawX, drawY, drawW, drawH);
-    }
-    schedulePreview();
-}
-
-function startPreview() {
-    stopPreview();
-    sizePreview();
-    schedulePreview();
+    const scale = Math.min(canvasW / bitmap.width, canvasH / bitmap.height);
+    const drawW = bitmap.width * scale;
+    const drawH = bitmap.height * scale;
+    previewCtx.drawImage(bitmap, (canvasW - drawW) / 2, (canvasH - drawH) / 2, drawW, drawH);
 }
 
 function stopPreview() {
-    if (!previewRaf) {
+    if (previewTimer) {
+        window.clearTimeout(previewTimer);
+        previewTimer = 0;
+    }
+}
+
+function useLiveVideo() {
+    stopPreview();
+    imageCapture = null;
+    if (youTile) {
+        youTile.classList.remove("snapshot-preview");
+    }
+}
+
+async function grabLoop() {
+    if (!imageCapture || !cameraOn) {
+        previewTimer = window.setTimeout(grabLoop, 120);
         return;
     }
-    if (userVideo && typeof userVideo.cancelVideoFrameCallback === "function") {
-        try {
-            userVideo.cancelVideoFrameCallback(previewRaf);
-        } catch (error) {
-            window.cancelAnimationFrame(previewRaf);
+    try {
+        const bitmap = await imageCapture.grabFrame();
+        drawBitmap(bitmap);
+        if (bitmap.close) {
+            bitmap.close();
         }
-    } else {
-        window.cancelAnimationFrame(previewRaf);
+    } catch (error) {
+        useLiveVideo();
+        return;
     }
-    previewRaf = 0;
+    previewTimer = window.setTimeout(grabLoop, 120);
+}
+
+function startSnapshotPreview(track) {
+    if (!window.ImageCapture) {
+        useLiveVideo();
+        return;
+    }
+    try {
+        imageCapture = new ImageCapture(track);
+    } catch (error) {
+        useLiveVideo();
+        return;
+    }
+    if (youTile) {
+        youTile.classList.add("snapshot-preview");
+    }
+    stopPreview();
+    grabLoop();
 }
 
 async function startCamera() {
     try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: { ideal: 640 },
-                height: { ideal: 480 },
-                facingMode: "user",
-            },
+            video: true,
             audio: true,
         });
         userVideo.srcObject = mediaStream;
-        userVideo.onloadedmetadata = sizePreview;
         try {
             await userVideo.play();
         } catch (playError) {
@@ -149,8 +156,7 @@ async function startCamera() {
         }
         cameraOff.classList.add("hidden");
         cameraOn = true;
-        startPreview();
-        window.addEventListener("resize", sizePreview);
+        startSnapshotPreview(mediaStream.getVideoTracks()[0]);
     } catch (error) {
         cameraOff.classList.remove("hidden");
         cameraOn = false;
@@ -160,6 +166,7 @@ async function startCamera() {
 
 function stopCamera() {
     stopPreview();
+    imageCapture = null;
     if (mediaStream) {
         mediaStream.getTracks().forEach(function (track) {
             track.stop();

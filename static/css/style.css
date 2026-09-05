@@ -1015,17 +1015,17 @@ button.btn {
 }
 
 .call-tile video {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    opacity: 0;
-    pointer-events: none;
+    width: 100%;
+    height: 320px;
+    object-fit: contain;
+    display: block;
+    background: #111;
 }
 
 .call-tile canvas {
+    display: none;
     width: 100%;
     height: 320px;
-    display: block;
     background: #111;
 }
 
