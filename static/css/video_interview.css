@@ -1,37 +1,65 @@
-/* Plain webcam. Avoid GPU compositing on the live camera. */
+/* Show the camera on a canvas. Do not composite the live <video> on screen. */
 
 body.video-interview-page .dashboard-page {
     background: #F7F9FC !important;
+    filter: none !important;
+    transform: none !important;
 }
 
 body.video-interview-page .call-screen {
-    background: #111;
+    background: #111827;
     color: #E2E8F0;
     padding: 20px;
     border-radius: 16px;
+    filter: none !important;
+    transform: none !important;
+    isolation: auto;
 }
 
 body.video-interview-page .you-tile {
-    background: #111;
-    border: 1px solid #333;
-    border-radius: 0;
-    overflow: visible;
+    position: relative;
+    background: #111827;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    overflow: hidden;
+    filter: none !important;
+    transform: none !important;
+    isolation: auto;
+    mix-blend-mode: normal;
 }
 
+/* Keep the webcam off-screen so Chrome still decodes frames. */
 body.video-interview-page #userVideo {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    pointer-events: none;
+    border: 0;
+    filter: none !important;
+    transform: none !important;
+    mix-blend-mode: normal;
+}
+
+body.video-interview-page #userCanvas {
     display: block;
     width: 100%;
     height: 320px;
-    object-fit: contain;
-    background: #111;
+    background: #111827;
     border: 0;
     border-radius: 0;
+    filter: none !important;
+    transform: none !important;
+    mix-blend-mode: normal;
+    image-rendering: auto;
 }
 
 body.video-interview-page .call-name,
 body.video-interview-page .speaking-label,
 body.video-interview-page .camera-off {
     z-index: 2;
-    background: #111;
+    background: #111827;
     color: #F8FAFC;
 }

@@ -5,7 +5,10 @@ const resultScreen = document.getElementById("resultScreen");
 const joinBtn = document.getElementById("joinBtn");
 const domainSelect = document.getElementById("domain");
 const userVideo = document.getElementById("userVideo");
+const userCanvas = document.getElementById("userCanvas");
 const cameraOff = document.getElementById("cameraOff");
+const previewCtx = userCanvas ? userCanvas.getContext("2d", { alpha: false }) : null;
+let previewRaf = 0;
 const questionText = document.getElementById("questionText");
 const answerBox = document.getElementById("answerBox");
 const callStatus = document.getElementById("callStatus");
@@ -55,13 +58,49 @@ function askCurrentQuestion() {
     setStatus("Answer by speaking or typing, then send.");
 }
 
+function sizePreview() {
+    if (!userCanvas || !userVideo.videoWidth) {
+        return;
+    }
+    userCanvas.width = userVideo.videoWidth;
+    userCanvas.height = userVideo.videoHeight;
+}
+
+function paintPreview() {
+    if (!previewCtx || !userCanvas) {
+        return;
+    }
+    if (cameraOn && userVideo.readyState >= 2) {
+        previewCtx.drawImage(userVideo, 0, 0, userCanvas.width, userCanvas.height);
+    }
+    previewRaf = window.requestAnimationFrame(paintPreview);
+}
+
+function startPreview() {
+    stopPreview();
+    sizePreview();
+    previewRaf = window.requestAnimationFrame(paintPreview);
+}
+
+function stopPreview() {
+    if (previewRaf) {
+        window.cancelAnimationFrame(previewRaf);
+        previewRaf = 0;
+    }
+}
+
 async function startCamera() {
     try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 640 }, height: { ideal: 480 } },
+            video: {
+                width: { ideal: 640 },
+                height: { ideal: 480 },
+                facingMode: "user",
+            },
             audio: true,
         });
         userVideo.srcObject = mediaStream;
+        userVideo.onloadedmetadata = sizePreview;
         try {
             await userVideo.play();
         } catch (playError) {
@@ -69,6 +108,7 @@ async function startCamera() {
         }
         cameraOff.classList.add("hidden");
         cameraOn = true;
+        startPreview();
     } catch (error) {
         cameraOff.classList.remove("hidden");
         cameraOn = false;
@@ -77,6 +117,7 @@ async function startCamera() {
 }
 
 function stopCamera() {
+    stopPreview();
     if (mediaStream) {
         mediaStream.getTracks().forEach(function (track) {
             track.stop();
@@ -156,6 +197,10 @@ cameraBtn.addEventListener("click", function () {
         track.enabled = cameraOn;
     });
     cameraOff.classList.toggle("hidden", cameraOn);
+    if (!cameraOn && previewCtx && userCanvas) {
+        previewCtx.fillStyle = "#111827";
+        previewCtx.fillRect(0, 0, userCanvas.width, userCanvas.height);
+    }
 });
 
 submitBtn.addEventListener("click", async function () {
