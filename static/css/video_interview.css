@@ -22,13 +22,13 @@ body.video-interview-page .you-tile {
     border-radius: 12px;
 }
 
-body.video-interview-page .user-camera-frame {
+body.video-interview-page #userVideo {
     display: block;
     width: 100%;
     height: 320px;
-    border: 0;
+    object-fit: contain;
     background: #111827;
-    border-radius: 12px;
+    border: 0;
 }
 
 body.video-interview-page .call-name,
@@ -48,7 +48,7 @@ body.video-interview-page .camera-off {
     border-radius: 12px;
     padding: 16px;
     text-align: center;
-    line-height: 1.4;
+    line-height: 1.45;
     background: #111827;
     color: #F8FAFC;
 }
