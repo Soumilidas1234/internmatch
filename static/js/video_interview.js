@@ -59,34 +59,75 @@ function askCurrentQuestion() {
 }
 
 function sizePreview() {
-    if (!userCanvas || !userVideo.videoWidth) {
+    if (!userCanvas) {
         return;
     }
-    userCanvas.width = userVideo.videoWidth;
-    userCanvas.height = userVideo.videoHeight;
+    const rect = userCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(2, Math.round(rect.width * dpr));
+    const height = Math.max(2, Math.round(rect.height * dpr));
+    if (userCanvas.width !== width) {
+        userCanvas.width = width;
+    }
+    if (userCanvas.height !== height) {
+        userCanvas.height = height;
+    }
+}
+
+function schedulePreview() {
+    if (userVideo && typeof userVideo.requestVideoFrameCallback === "function") {
+        previewRaf = userVideo.requestVideoFrameCallback(function () {
+            paintPreview();
+        });
+        return;
+    }
+    previewRaf = window.requestAnimationFrame(paintPreview);
 }
 
 function paintPreview() {
     if (!previewCtx || !userCanvas) {
         return;
     }
-    if (cameraOn && userVideo.readyState >= 2) {
-        previewCtx.drawImage(userVideo, 0, 0, userCanvas.width, userCanvas.height);
+    const canvasW = userCanvas.width;
+    const canvasH = userCanvas.height;
+    previewCtx.fillStyle = "#111827";
+    previewCtx.fillRect(0, 0, canvasW, canvasH);
+
+    const videoW = userVideo.videoWidth;
+    const videoH = userVideo.videoHeight;
+    if (cameraOn && videoW > 1 && videoH > 1) {
+        const crop = Math.max(4, Math.round(videoH * 0.06));
+        const sourceH = videoH - crop;
+        const scale = Math.min(canvasW / videoW, canvasH / sourceH);
+        const drawW = videoW * scale;
+        const drawH = sourceH * scale;
+        const drawX = (canvasW - drawW) / 2;
+        const drawY = (canvasH - drawH) / 2;
+        previewCtx.drawImage(userVideo, 0, 0, videoW, sourceH, drawX, drawY, drawW, drawH);
     }
-    previewRaf = window.requestAnimationFrame(paintPreview);
+    schedulePreview();
 }
 
 function startPreview() {
     stopPreview();
     sizePreview();
-    previewRaf = window.requestAnimationFrame(paintPreview);
+    schedulePreview();
 }
 
 function stopPreview() {
-    if (previewRaf) {
-        window.cancelAnimationFrame(previewRaf);
-        previewRaf = 0;
+    if (!previewRaf) {
+        return;
     }
+    if (userVideo && typeof userVideo.cancelVideoFrameCallback === "function") {
+        try {
+            userVideo.cancelVideoFrameCallback(previewRaf);
+        } catch (error) {
+            window.cancelAnimationFrame(previewRaf);
+        }
+    } else {
+        window.cancelAnimationFrame(previewRaf);
+    }
+    previewRaf = 0;
 }
 
 async function startCamera() {
@@ -109,6 +150,7 @@ async function startCamera() {
         cameraOff.classList.add("hidden");
         cameraOn = true;
         startPreview();
+        window.addEventListener("resize", sizePreview);
     } catch (error) {
         cameraOff.classList.remove("hidden");
         cameraOn = false;

@@ -8,7 +8,7 @@
 </head>
 <body class="video-interview-page">
     {% include "partials/navbar.html" %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}?v=canvas-cam-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}?v=canvas-cam-2">
 
     <main class="dashboard-page">
         <div class="container">
@@ -40,6 +40,7 @@
             </section>
 
             <section id="callScreen" class="call-screen hidden">
+                <video id="userVideo" class="camera-source" autoplay muted playsinline disablepictureinpicture></video>
                 <div class="call-grid">
                     <article class="call-tile ai-tile" id="aiTile">
                         <img src="{{ url_for('static', filename='images/ai-interviewer.png') }}" alt="AI interviewer">
@@ -47,8 +48,7 @@
                         <p class="speaking-label" id="aiSpeaking">Connecting...</p>
                     </article>
                     <article class="call-tile you-tile">
-                        <video id="userVideo" autoplay muted playsinline disablepictureinpicture></video>
-                        <canvas id="userCanvas" width="640" height="480" aria-label="Your camera preview"></canvas>
+                        <canvas id="userCanvas" width="640" height="360" aria-label="Your camera preview"></canvas>
                         <div class="camera-off hidden" id="cameraOff">Camera off</div>
                         <div class="call-name">{{ user.name }} · You</div>
                     </article>
@@ -81,6 +81,6 @@
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='js/video_interview.js') }}?v=canvas-cam-1"></script>
+    <script src="{{ url_for('static', filename='js/video_interview.js') }}?v=canvas-cam-2"></script>
 </body>
 </html>

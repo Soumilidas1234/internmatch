@@ -1,4 +1,4 @@
-/* Show the camera on a canvas. Do not composite the live <video> on screen. */
+/* Camera preview is a canvas. The live <video> stays off-screen. */
 
 body.video-interview-page .dashboard-page {
     background: #F7F9FC !important;
@@ -13,7 +13,18 @@ body.video-interview-page .call-screen {
     border-radius: 16px;
     filter: none !important;
     transform: none !important;
-    isolation: auto;
+}
+
+body.video-interview-page .camera-source {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: 640px;
+    height: 480px;
+    opacity: 1;
+    pointer-events: none;
+    filter: none !important;
+    transform: none !important;
 }
 
 body.video-interview-page .you-tile {
@@ -21,26 +32,9 @@ body.video-interview-page .you-tile {
     background: #111827;
     border: 1px solid #334155;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     filter: none !important;
     transform: none !important;
-    isolation: auto;
-    mix-blend-mode: normal;
-}
-
-/* Keep the webcam off-screen so Chrome still decodes frames. */
-body.video-interview-page #userVideo {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    pointer-events: none;
-    border: 0;
-    filter: none !important;
-    transform: none !important;
-    mix-blend-mode: normal;
 }
 
 body.video-interview-page #userCanvas {
@@ -49,11 +43,9 @@ body.video-interview-page #userCanvas {
     height: 320px;
     background: #111827;
     border: 0;
-    border-radius: 0;
+    border-radius: 12px;
     filter: none !important;
     transform: none !important;
-    mix-blend-mode: normal;
-    image-rendering: auto;
 }
 
 body.video-interview-page .call-name,
