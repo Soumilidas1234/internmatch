@@ -1,0 +1,124 @@
+/* Mock interview webcam: last-loaded, beats leftover neon/call-stage rules. */
+
+body.video-interview-page {
+    color-scheme: normal;
+}
+
+body.video-interview-page .dashboard-page {
+    background: #F7F9FC !important;
+}
+
+body.video-interview-page .call-screen,
+body.video-interview-page .call-grid,
+body.video-interview-page .call-tile,
+body.video-interview-page .you-tile,
+body.video-interview-page .ai-tile,
+body.video-interview-page .you-feed {
+    isolation: auto !important;
+    filter: unset !important;
+    -webkit-filter: unset !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mix-blend-mode: unset !important;
+    background-blend-mode: unset !important;
+    transform: none !important;
+    transform-style: flat !important;
+    will-change: auto !important;
+    opacity: 1 !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+    clip-path: none !important;
+}
+
+body.video-interview-page .call-screen {
+    background: #0F172A;
+    color: #E2E8F0;
+    color-scheme: dark;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+body.video-interview-page .call-tile,
+body.video-interview-page .you-tile,
+body.video-interview-page .ai-tile {
+    background: #111827 !important;
+    border: 1px solid #1E293B !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    border-radius: 16px;
+}
+
+body.video-interview-page .call-tile::before,
+body.video-interview-page .call-tile::after,
+body.video-interview-page .you-tile::before,
+body.video-interview-page .you-tile::after,
+body.video-interview-page .ai-tile::before,
+body.video-interview-page .ai-tile::after,
+body.video-interview-page .you-feed::before,
+body.video-interview-page .you-feed::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+}
+
+body.video-interview-page .you-feed {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    overflow: hidden;
+    border-radius: 16px;
+    background: #111827;
+}
+
+body.video-interview-page #userVideo,
+body.video-interview-page .you-feed video,
+body.video-interview-page video.user-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    background: #111827;
+    border: 0;
+    border-radius: 16px;
+    color-scheme: only dark;
+    forced-color-adjust: none;
+    -webkit-filter: none !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    background-blend-mode: normal !important;
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    isolation: auto !important;
+    will-change: auto !important;
+    transform-style: flat !important;
+    mask: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+    clip-path: none !important;
+    image-rendering: auto !important;
+}
+
+body.video-interview-page .call-tile img {
+    display: block;
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 16px;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+}
+
+body.video-interview-page .ai-tile.talking {
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.45) !important;
+}
+
+body.video-interview-page .call-name,
+body.video-interview-page .speaking-label,
+body.video-interview-page .camera-off {
+    z-index: 2;
+    background: rgba(17, 24, 39, 0.82) !important;
+    color: #F8FAFC !important;
+    pointer-events: none;
+}

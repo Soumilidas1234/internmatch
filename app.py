@@ -1548,6 +1548,7 @@ def interview_arena():
 
 
 @app.route("/video-interview")
+@app.route("/video_interview")
 @login_required
 def video_interview():
     user = get_current_user()

@@ -108,6 +108,7 @@
         "/resume-interview",
         "/interview-questions",
         "/video-interview",
+        "/video_interview",
         "/progress",
         "/ats-simulator",
         "/job-analyzer"
