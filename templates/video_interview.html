@@ -8,7 +8,7 @@
 </head>
 <body class="video-interview-page">
     {% include "partials/navbar.html" %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}?v=cam-rgb-3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}?v=iframe-cam-1">
 
     <main class="dashboard-page">
         <div class="container">
@@ -47,8 +47,7 @@
                         <p class="speaking-label" id="aiSpeaking">Connecting...</p>
                     </article>
                     <article class="call-tile you-tile" id="youTile">
-                        <video id="userVideo" autoplay muted playsinline></video>
-                        <canvas id="userCanvas" width="640" height="360" aria-hidden="true"></canvas>
+                        <iframe id="userCamera" class="user-camera-frame" allow="camera" title="Your camera"></iframe>
                         <div class="camera-off hidden" id="cameraOff">Camera is blocked. Click the camera icon in the address bar, choose Allow, then click Camera.</div>
                         <div class="call-name">{{ user.name }} · You</div>
                     </article>
@@ -81,6 +80,6 @@
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='js/video_interview.js') }}?v=cam-rgb-3"></script>
+    <script src="{{ url_for('static', filename='js/video_interview.js') }}?v=iframe-cam-1"></script>
 </body>
 </html>

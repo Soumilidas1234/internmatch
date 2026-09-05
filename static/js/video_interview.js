@@ -1,16 +1,11 @@
-// Local AI video interview. Camera and mic stay in the browser.
+// Local AI video interview. Camera stays in a plain iframe so page CSS cannot distort it.
 const lobby = document.getElementById("lobby");
 const callScreen = document.getElementById("callScreen");
 const resultScreen = document.getElementById("resultScreen");
 const joinBtn = document.getElementById("joinBtn");
 const domainSelect = document.getElementById("domain");
-const userVideo = document.getElementById("userVideo");
-const userCanvas = document.getElementById("userCanvas");
-const youTile = document.getElementById("youTile");
+const userCamera = document.getElementById("userCamera");
 const cameraOff = document.getElementById("cameraOff");
-const previewCtx = userCanvas ? userCanvas.getContext("2d", { alpha: false }) : null;
-let previewTimer = 0;
-let imageCapture = null;
 const questionText = document.getElementById("questionText");
 const answerBox = document.getElementById("answerBox");
 const callStatus = document.getElementById("callStatus");
@@ -23,7 +18,8 @@ const cameraBtn = document.getElementById("cameraBtn");
 const submitBtn = document.getElementById("submitBtn");
 const endBtn = document.getElementById("endBtn");
 
-let mediaStream = null;
+const cameraPage = "/static/camera_preview.html?v=iframe-cam-1";
+let cameraStarted = false;
 let cameraOn = true;
 let questions = [];
 let domain = "";
@@ -60,123 +56,55 @@ function askCurrentQuestion() {
     setStatus("Answer by speaking or typing, then send.");
 }
 
-function sizePreview() {
-    if (!userCanvas) {
+function sendToCamera(type) {
+    if (!userCamera || !userCamera.contentWindow) {
         return;
     }
-    const rect = userCanvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const width = Math.max(2, Math.round(rect.width * dpr));
-    const height = Math.max(2, Math.round(rect.height * dpr));
-    if (userCanvas.width !== width) {
-        userCanvas.width = width;
-    }
-    if (userCanvas.height !== height) {
-        userCanvas.height = height;
-    }
+    userCamera.contentWindow.postMessage({ source: "internmatch-camera-parent", type: type }, "*");
 }
 
-function drawBitmap(bitmap) {
-    if (!previewCtx || !userCanvas) {
-        return;
-    }
-    sizePreview();
-    const canvasW = userCanvas.width;
-    const canvasH = userCanvas.height;
-    previewCtx.fillStyle = "#111827";
-    previewCtx.fillRect(0, 0, canvasW, canvasH);
-    const scale = Math.min(canvasW / bitmap.width, canvasH / bitmap.height);
-    const drawW = bitmap.width * scale;
-    const drawH = bitmap.height * scale;
-    previewCtx.drawImage(bitmap, (canvasW - drawW) / 2, (canvasH - drawH) / 2, drawW, drawH);
-}
-
-function stopPreview() {
-    if (previewTimer) {
-        window.clearTimeout(previewTimer);
-        previewTimer = 0;
-    }
-}
-
-function useLiveVideo() {
-    stopPreview();
-    imageCapture = null;
-    if (youTile) {
-        youTile.classList.remove("snapshot-preview");
-    }
-}
-
-async function grabLoop() {
-    if (!imageCapture || !cameraOn) {
-        previewTimer = window.setTimeout(grabLoop, 120);
-        return;
-    }
-    try {
-        const bitmap = await imageCapture.grabFrame();
-        drawBitmap(bitmap);
-        if (bitmap.close) {
-            bitmap.close();
-        }
-    } catch (error) {
-        useLiveVideo();
-        return;
-    }
-    previewTimer = window.setTimeout(grabLoop, 120);
-}
-
-function startSnapshotPreview(track) {
-    if (!window.ImageCapture) {
-        useLiveVideo();
-        return;
-    }
-    try {
-        imageCapture = new ImageCapture(track);
-    } catch (error) {
-        useLiveVideo();
-        return;
-    }
-    if (youTile) {
-        youTile.classList.add("snapshot-preview");
-    }
-    stopPreview();
-    grabLoop();
-}
-
-async function startCamera() {
-    try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-        });
-        userVideo.srcObject = mediaStream;
-        try {
-            await userVideo.play();
-        } catch (playError) {
-            /* Stream is attached; a later gesture can start playback. */
-        }
-        cameraOff.classList.add("hidden");
-        cameraOn = true;
-        startSnapshotPreview(mediaStream.getVideoTracks()[0]);
-    } catch (error) {
-        cameraOff.classList.remove("hidden");
-        cameraOn = false;
-        setStatus("Chrome blocked the camera. Click the camera icon in the address bar, choose Allow, then click Camera. You can still type answers.");
-    }
+function startCamera() {
+    cameraStarted = true;
+    cameraOn = true;
+    cameraOff.classList.add("hidden");
+    userCamera.src = cameraPage + "&t=" + Date.now();
 }
 
 function stopCamera() {
-    stopPreview();
-    imageCapture = null;
-    if (mediaStream) {
-        mediaStream.getTracks().forEach(function (track) {
-            track.stop();
-        });
-        mediaStream = null;
+    sendToCamera("stop");
+    if (userCamera) {
+        userCamera.src = "about:blank";
     }
+    cameraStarted = false;
     window.speechSynthesis.cancel();
     if (recognition && listening) {
         recognition.stop();
     }
 }
+
+window.addEventListener("message", function (event) {
+    const data = event.data || {};
+    if (data.source !== "internmatch-camera") {
+        return;
+    }
+    if (data.type === "ready") {
+        cameraOff.classList.add("hidden");
+        cameraOn = true;
+    }
+    if (data.type === "blocked") {
+        cameraOff.classList.remove("hidden");
+        cameraOn = false;
+        setStatus("Chrome blocked the camera. Click the camera icon in the address bar, choose Allow, then click Camera. You can still type answers.");
+    }
+    if (data.type === "off") {
+        cameraOff.classList.remove("hidden");
+        cameraOn = false;
+    }
+    if (data.type === "on") {
+        cameraOff.classList.add("hidden");
+        cameraOn = true;
+    }
+});
 
 function setupSpeech() {
     const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -197,7 +125,7 @@ function setupSpeech() {
 }
 
 joinBtn.addEventListener("click", async function () {
-    lobbyStatus.textContent = "Connecting to AI interviewer...";
+    lobbyStatus.textContent = "Starting practice...";
     domain = domainSelect.value;
     const response = await fetch("/api/video-interview/start", {
         method: "POST",
@@ -206,7 +134,7 @@ joinBtn.addEventListener("click", async function () {
     });
     const data = await response.json();
     if (!response.ok) {
-        lobbyStatus.textContent = data.error || "Could not start the call.";
+        lobbyStatus.textContent = data.error || "Could not start the interview.";
         return;
     }
     questions = data.questions;
@@ -215,7 +143,7 @@ joinBtn.addEventListener("click", async function () {
     results = [];
     lobby.classList.add("hidden");
     callScreen.classList.remove("hidden");
-    await startCamera();
+    startCamera();
     setupSpeech();
     askCurrentQuestion();
 });
@@ -236,19 +164,11 @@ micBtn.addEventListener("click", function () {
 });
 
 cameraBtn.addEventListener("click", function () {
-    if (!mediaStream) {
+    if (!cameraStarted) {
         startCamera();
         return;
     }
-    cameraOn = !cameraOn;
-    mediaStream.getVideoTracks().forEach(function (track) {
-        track.enabled = cameraOn;
-    });
-    cameraOff.classList.toggle("hidden", cameraOn);
-    if (!cameraOn && previewCtx && userCanvas) {
-        previewCtx.fillStyle = "#111827";
-        previewCtx.fillRect(0, 0, userCanvas.width, userCanvas.height);
-    }
+    sendToCamera("toggle");
 });
 
 submitBtn.addEventListener("click", async function () {

@@ -1,5 +1,3 @@
-/* Normal camera preview. Avoid GPU color-conversion glitches. */
-
 html.video-interview-page,
 body.video-interview-page {
     overflow-x: visible !important;
@@ -8,8 +6,6 @@ body.video-interview-page {
 
 body.video-interview-page .dashboard-page {
     background: #F7F9FC !important;
-    filter: none !important;
-    transform: none !important;
 }
 
 body.video-interview-page .call-screen {
@@ -17,8 +13,6 @@ body.video-interview-page .call-screen {
     color: #E2E8F0;
     padding: 20px;
     border-radius: 16px;
-    filter: none !important;
-    transform: none !important;
 }
 
 body.video-interview-page .you-tile {
@@ -26,41 +20,22 @@ body.video-interview-page .you-tile {
     background: #111827;
     border: 1px solid #334155;
     border-radius: 12px;
-    overflow: visible;
-    filter: none !important;
-    transform: none !important;
 }
 
-body.video-interview-page #userVideo {
+body.video-interview-page .user-camera-frame {
     display: block;
     width: 100%;
     height: 320px;
-    object-fit: contain;
-    background: #111827;
     border: 0;
-    filter: none !important;
-    transform: none !important;
-    mix-blend-mode: normal;
-}
-
-body.video-interview-page #userCanvas {
-    display: none;
-    width: 100%;
-    height: 320px;
     background: #111827;
+    border-radius: 12px;
 }
 
-body.video-interview-page .you-tile.snapshot-preview #userVideo {
-    position: absolute;
-    width: 320px;
-    height: 240px;
-    left: -10000px;
-    top: 0;
-    opacity: 1;
-}
-
-body.video-interview-page .you-tile.snapshot-preview #userCanvas {
-    display: block;
+body.video-interview-page .call-name,
+body.video-interview-page .speaking-label {
+    z-index: 2;
+    background: #111827;
+    color: #F8FAFC;
 }
 
 body.video-interview-page .camera-off {
