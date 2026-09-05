@@ -12,9 +12,9 @@
         <div class="container">
             <section class="split-visual reveal">
                 <div>
-                    <p class="badge">Preparation tool</p>
-                    <h1>AI Job Description Analyzer</h1>
-                    <p class="auth-subtitle">Understand what a role requires and discover what you need to prepare. This does not apply to companies for you.</p>
+                    <p class="badge">Job analyzer</p>
+                    <h1>Understand what a role is asking for.</h1>
+                    <p class="auth-subtitle">Paste a job description to see required skills and what you should prepare. This does not apply to companies for you.</p>
                 </div>
                 <figure class="scene-art">
                     <img src="{{ url_for('static', filename='images/job-description.png') }}" alt="Job description hologram">
@@ -25,8 +25,8 @@
                 <form method="POST" action="{{ url_for('job_analyzer') }}">
                     <label for="job_description"><strong>Paste Job Description</strong></label>
                     <textarea id="job_description" name="job_description" rows="12" required placeholder="Paste the complete job description here...">{{ pasted or '' }}</textarea>
-                    <div class="ai-loader"><span class="loader-orb"></span> AI is analyzing this job description...</div>
-                    <button class="btn btn-pulse" type="submit">Analyze Job Description</button>
+                    <div class="ai-loader"><span class="loader-orb"></span> Reading the job description…</div>
+                    <button class="btn" type="submit">Analyze Job Description</button>
                 </form>
             </section>
 
@@ -35,7 +35,7 @@
                 <p class="badge">Your Match With This Role</p>
                 <h2>Role preparation match</h2>
                 <div class="score-ring" data-score="{{ result.score }}"><span>{{ result.score }}%</span></div>
-                <p class="auth-subtitle">AI-generated preparation estimate from your profile, resume skills, and this job description. It does not mean you will get the job, pass ATS, or be selected.</p>
+                    <p class="auth-subtitle">This estimate compares your profile and resume skills with this job description. It does not mean you will get the job.</p>
                 <p><strong>Detected title:</strong> {{ result.job_title }}</p>
             </section>
 

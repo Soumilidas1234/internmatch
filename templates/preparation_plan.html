@@ -11,20 +11,23 @@
     <main class="dashboard-page">
         <div class="container">
             <section class="split-visual reveal">
-                <div>
-                    <p class="badge">Personalized Plan</p>
+                <div class="page-lead">
+                    <p class="badge">Preparation plan</p>
                     <h1>Your 14-day plan for {{ plan.role }}</h1>
-                    <p class="auth-subtitle">Generated from your skills, gaps, and recent exam mistakes. Practice here, then apply on company sites.</p>
+                    <p class="auth-subtitle">Built from your skills, gaps, and recent exam mistakes. Work through it in order, then apply on company sites.</p>
                 </div>
                 <figure class="scene-art">
-                    <img src="{{ url_for('static', filename='images/preparation-plan.png') }}" alt="Preparation timeline">
+                    <img src="{{ url_for('static', filename='images/preparation-plan.png') }}" alt="Preparation plan illustration">
                 </figure>
             </section>
-            <section class="result-grid">
+            <section class="plan-list">
                 {% for step in plan.plan %}
-                <article class="intern-card">
-                    <p class="preview-label">{{ step.days }}</p>
-                    <h3>{{ step.focus }}</h3>
+                <article class="intern-card plan-item {% if loop.first %}current{% endif %}">
+                    <span class="plan-mark" aria-hidden="true">{% if loop.first %}○{% else %}○{% endif %}</span>
+                    <div>
+                        <p class="preview-label">{{ step.days }}{% if loop.first %} · Current{% else %} · Upcoming{% endif %}</p>
+                        <h3>{{ step.focus }}</h3>
+                    </div>
                 </article>
                 {% endfor %}
             </section>

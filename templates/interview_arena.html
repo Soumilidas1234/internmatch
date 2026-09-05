@@ -12,21 +12,21 @@
     <main class="dashboard-page">
         <div class="container">
             <section class="split-visual reveal">
-                <div>
+                <div class="page-lead">
                     <p class="badge">AI Examiner</p>
-                    <h1>Test your target role</h1>
-                    <p class="auth-subtitle">Practice questions for {{ target }}. Scores are for learning, not a hiring decision.</p>
+                    <h1>Test your technical knowledge.</h1>
+                    <p class="auth-subtitle">Practice role-specific questions for {{ target }} before the real interview. Scores are for learning, not a hiring decision.</p>
                 </div>
-                <figure class="scene-art ai-idle">
-                    <img src="{{ url_for('static', filename='images/ai-examiner.png') }}" alt="Holographic AI examiner">
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/ai-examiner.png') }}" alt="AI examiner illustration">
                 </figure>
             </section>
 
             {% if not current_question and not finished %}
             <section class="arena-stage">
-                <p class="preview-label">Choose your track</p>
-                <h2>Enter the arena</h2>
-                <p class="auth-subtitle">Questions follow your target role. After the exam you will see mistakes and a retry path.</p>
+                <p class="preview-label">What happens next</p>
+                <h2>Start a practice exam</h2>
+                <p class="auth-subtitle">You'll get role-specific questions, then a review of mistakes and what to retry.</p>
                 <form method="POST">
                     <input type="hidden" name="action" value="start">
                     <div class="form-group">
@@ -37,16 +37,16 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <button class="btn btn-pulse" type="submit">Start AI Exam</button>
+                    <button class="btn" type="submit">Start Exam</button>
                 </form>
-                <p class="auth-switch"><a href="{{ url_for('video_interview') }}">Join AI Video Call Interview instead</a></p>
+                <p class="auth-switch"><a href="{{ url_for('video_interview') }}">Try a mock interview instead</a></p>
             </section>
             {% endif %}
 
             {% if current_question %}
             <section class="examiner-board">
-                <figure class="scene-art ai-idle examiner-orb">
-                    <img src="{{ url_for('static', filename='images/ai-examiner.png') }}" alt="Holographic AI examiner">
+                <figure class="scene-art examiner-orb">
+                    <img src="{{ url_for('static', filename='images/ai-examiner.png') }}" alt="AI examiner illustration">
                 </figure>
             <section class="arena-stage examiner-stage">
                 <div class="arena-top">

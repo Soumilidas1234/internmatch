@@ -2,10 +2,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/visual.css') }}">
-<div class="fx-aurora" aria-hidden="true"></div>
-<div class="fx-grid" aria-hidden="true"></div>
-<div class="fx-particles" id="fx-particles" aria-hidden="true"></div>
-<div class="cursor-glow" id="cursor-glow" aria-hidden="true"></div>
 <header class="navbar">
     <div class="container nav-inner">
         <a class="logo" href="{{ url_for('home') }}">
@@ -13,41 +9,48 @@
             InternMatch <span>AI</span>
         </a>
         <input type="checkbox" id="nav-toggle" class="nav-toggle" tabindex="-1">
-        <label class="nav-toggle-label" for="nav-toggle">Menu</label>
-        <nav>
+        <label class="nav-toggle-label" for="nav-toggle" aria-label="Open menu">
+            <span class="nav-burger" aria-hidden="true"><i></i><i></i><i></i></span>
+        </label>
+        <nav aria-label="Main">
             {% if is_admin %}
                 <a class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
                 <a class="{% if request.endpoint == 'admin.students' %}active{% endif %}" href="{{ url_for('admin.students') }}">Students</a>
             {% elif nav_user %}
                 <a class="{% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a>
-                <a class="{% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}">Profile</a>
-                <a class="{% if request.endpoint == 'resume_analyzer' %}active{% endif %}" href="{{ url_for('resume_analyzer') }}">Resume</a>
-                <a class="{% if request.endpoint == 'skill_gap' %}active{% endif %}" href="{{ url_for('skill_gap') }}">Skill Gap</a>
-                <a class="{% if request.endpoint == 'career_roadmap' %}active{% endif %}" href="{{ url_for('career_roadmap') }}">Roadmap</a>
-                <a class="{% if request.endpoint == 'interview_arena' %}active{% endif %}" href="{{ url_for('interview_arena') }}">AI Exam</a>
-                <div class="nav-drop {% if request.endpoint in ('resume_interview', 'resume_interview_play', 'resume_interview_report', 'interview_questions', 'interview_questions_bank', 'interview_questions_practice', 'interview_questions_saved', 'video_interview') %}open-active{% endif %}">
-                    <span class="nav-drop-label">Interview</span>
+                <a class="{% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}">My Profile</a>
+                <details class="nav-drop {% if request.endpoint in ('resume_analyzer', 'skill_gap', 'job_analyzer', 'job_analyzer_detail', 'ats_simulator', 'ats_simulator_detail', 'project_recommendations', 'preparation_plan', 'career_roadmap', 'resume_fixer') %}open-active{% endif %}">
+                    <summary class="nav-drop-label">Preparation</summary>
                     <div class="nav-drop-menu">
+                        <a class="{% if request.endpoint == 'resume_analyzer' %}active{% endif %}" href="{{ url_for('resume_analyzer') }}">Resume Analysis</a>
+                        <a class="{% if request.endpoint == 'skill_gap' %}active{% endif %}" href="{{ url_for('skill_gap') }}">Skill Gap</a>
+                        <a class="{% if request.endpoint in ('job_analyzer', 'job_analyzer_detail') %}active{% endif %}" href="{{ url_for('job_analyzer') }}">Job Analyzer</a>
+                        <a class="{% if request.endpoint in ('ats_simulator', 'ats_simulator_detail') %}active{% endif %}" href="{{ url_for('ats_simulator') }}">ATS Simulator</a>
+                        <a class="{% if request.endpoint == 'project_recommendations' %}active{% endif %}" href="{{ url_for('project_recommendations') }}">Project Analyzer</a>
+                        <a class="{% if request.endpoint == 'preparation_plan' %}active{% endif %}" href="{{ url_for('preparation_plan') }}">Preparation Plan</a>
+                        <a class="{% if request.endpoint == 'career_roadmap' %}active{% endif %}" href="{{ url_for('career_roadmap') }}">Career Roadmap</a>
+                    </div>
+                </details>
+                <details class="nav-drop {% if request.endpoint in ('interview_arena', 'resume_interview', 'resume_interview_play', 'resume_interview_report', 'video_interview', 'interview_questions', 'interview_questions_bank', 'interview_questions_practice', 'interview_questions_saved') %}open-active{% endif %}">
+                    <summary class="nav-drop-label">Practice</summary>
+                    <div class="nav-drop-menu">
+                        <a class="{% if request.endpoint == 'interview_arena' %}active{% endif %}" href="{{ url_for('interview_arena') }}">AI Examiner</a>
+                        {% if nav_endpoints is defined and 'resume_interview' in nav_endpoints %}
+                        <a class="{% if request.endpoint in ('resume_interview', 'resume_interview_play', 'resume_interview_report') %}active{% endif %}" href="{{ url_for('resume_interview') }}">Viva Simulator</a>
+                        {% endif %}
+                        <a class="{% if request.endpoint == 'video_interview' %}active{% endif %}" href="{{ url_for('video_interview') }}">Mock Interview</a>
                         {% if nav_endpoints is defined and 'interview_questions' in nav_endpoints %}
                         <a class="{% if request.endpoint in ('interview_questions', 'interview_questions_bank', 'interview_questions_practice', 'interview_questions_saved') %}active{% endif %}" href="{{ url_for('interview_questions') }}">Interview Questions</a>
                         {% endif %}
-                        {% if nav_endpoints is defined and 'resume_interview' in nav_endpoints %}
-                        <a class="{% if request.endpoint in ('resume_interview', 'resume_interview_play', 'resume_interview_report') %}active{% endif %}" href="{{ url_for('resume_interview') }}">Resume Interview</a>
-                        {% endif %}
-                        <a class="{% if request.endpoint == 'video_interview' %}active{% endif %}" href="{{ url_for('video_interview') }}">Mock Interview</a>
                     </div>
-                </div>
-                <div class="nav-drop {% if request.endpoint in ('resume_fixer', 'job_analyzer', 'job_analyzer_detail', 'ats_simulator', 'ats_simulator_detail', 'preparation_plan', 'progress', 'readiness') %}open-active{% endif %}">
-                    <span class="nav-drop-label">More</span>
+                </details>
+                <details class="nav-drop {% if request.endpoint in ('progress', 'readiness') %}open-active{% endif %}">
+                    <summary class="nav-drop-label">Progress</summary>
                     <div class="nav-drop-menu">
-                        <a class="{% if request.endpoint == 'readiness' %}active{% endif %}" href="{{ url_for('readiness') }}">Role Readiness</a>
-                        <a class="{% if request.endpoint == 'resume_fixer' %}active{% endif %}" href="{{ url_for('resume_fixer') }}">Fix Resume</a>
-                        <a class="{% if request.endpoint in ('job_analyzer', 'job_analyzer_detail') %}active{% endif %}" href="{{ url_for('job_analyzer') }}">Job Analyzer</a>
-                        <a class="{% if request.endpoint in ('ats_simulator', 'ats_simulator_detail') %}active{% endif %}" href="{{ url_for('ats_simulator') }}">ATS Simulator</a>
-                        <a class="{% if request.endpoint == 'preparation_plan' %}active{% endif %}" href="{{ url_for('preparation_plan') }}">Preparation Plan</a>
                         <a class="{% if request.endpoint == 'progress' %}active{% endif %}" href="{{ url_for('progress') }}">My Progress</a>
+                        <a class="{% if request.endpoint == 'readiness' %}active{% endif %}" href="{{ url_for('readiness') }}">Readiness</a>
                     </div>
-                </div>
+                </details>
             {% else %}
                 {% if request.endpoint == 'home' %}
                     <a href="#features">Features</a>
@@ -60,7 +63,7 @@
             {% endif %}
         </nav>
         <div class="nav-end">
-            <button type="button" class="sound-toggle is-on" id="sound-toggle" aria-pressed="true" title="Feature sounds on">Sound</button>
+            <button type="button" class="sound-toggle is-on" id="sound-toggle" aria-pressed="true" title="Feature sounds on">Sound on</button>
             {% if nav_user %}
                 <a class="btn btn-small btn-outline" href="{{ url_for('logout') }}">Logout</a>
             {% else %}

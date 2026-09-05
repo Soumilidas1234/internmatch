@@ -17,8 +17,8 @@
                     <p class="auth-subtitle">{{ category_label }} · {{ question.topic }} · {{ question.difficulty|title }} · {{ question.priority }} priority</p>
                     <a class="btn btn-outline btn-small" href="{{ url_for('interview_questions_bank', set_id=record.id) }}">Back to bank</a>
                 </div>
-                <figure class="scene-art ai-idle">
-                    <img src="{{ url_for('static', filename='images/interview-questions.png') }}" alt="Floating interview question cards">
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/interview-questions.png') }}" alt="Interview question practice illustration">
                 </figure>
             </section>
             <div class="progress-track">

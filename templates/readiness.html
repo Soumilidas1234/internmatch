@@ -11,13 +11,13 @@
     <main class="dashboard-page">
         <div class="container">
             <section class="split-visual reveal">
-                <div>
-                    <p class="badge">Perfect Match</p>
-                    <h1>Career / role readiness</h1>
-                    <p class="auth-subtitle">How well does your current profile match your target role? This is an estimate, not a hiring guarantee.</p>
+                <div class="page-lead">
+                    <p class="badge">Role readiness</p>
+                    <h1>See how prepared you are.</h1>
+                    <p class="auth-subtitle">This estimate compares your current profile with your target role. It is not a hiring guarantee.</p>
                 </div>
                 <figure class="scene-art">
-                    <img src="{{ url_for('static', filename='images/role-readiness.png') }}" alt="Readiness ring hologram">
+                    <img src="{{ url_for('static', filename='images/role-readiness.png') }}" alt="Role readiness illustration">
                 </figure>
             </section>
 
@@ -41,36 +41,49 @@
 
             {% if need_skills %}
             <section class="empty-state">
-                <h2>Add skills first</h2>
-                <p class="auth-subtitle">Analyze your resume or add skills on your profile.</p>
+                <h2>No resume analyzed yet</h2>
+                <p>Upload your resume to discover your strengths and skill gaps.</p>
                 <a class="btn" href="{{ url_for('resume_analyzer') }}">Analyze My Resume</a>
             </section>
             {% elif match %}
             <section class="strength-panel">
                 <div class="strength-meter">
-                    <p class="preview-label">Target role</p>
+                    <p class="preview-label">Interview readiness</p>
                     <h2>{{ target }}</h2>
                     <div class="score-ring" data-score="{{ match.readiness }}"><span>{{ match.readiness }}%</span></div>
-                    <div class="strength-score">
-                        <span>Role readiness · {{ match.label }}</span>
-                    </div>
-                    <div class="strength-bar"><span style="width: {{ match.readiness }}%;"></span></div>
-                    <p class="match-note">Why this score: {{ match.why }}</p>
-                    <p class="score-breakdown">
-                        Skills {{ match.skill_score }}% · Text {{ match.text_similarity_score }}% ·
-                        Neural {{ match.neural_score }}% · Domain {{ 'Yes' if match.domain_match else 'No' }}
+                    <p class="readiness-label">
+                        {% if match.readiness >= 80 %}Strong foundation
+                        {% elif match.readiness >= 60 %}Good start
+                        {% elif match.readiness >= 40 %}Building up
+                        {% else %}Just getting started
+                        {% endif %}
+                        · {{ match.label }}
                     </p>
+                    <div class="strength-bar"><span style="width: {{ match.readiness }}%;"></span></div>
+                    {% if have %}
+                    <p class="match-note">Your profile matches this role well because you already have {{ have[:3] | join(', ') }}{% if have|length > 3 %}, and more{% endif %}.</p>
+                    {% else %}
+                    <p class="match-note">{{ match.why }}</p>
+                    {% endif %}
                 </div>
                 <div>
-                    <h3>You are strong in</h3>
+                    <h3>Strong areas</h3>
                     {% for skill in have %}
-                    <span class="skill-ok">✓ {{ skill }}</span>
+                    <span class="skill-ok">{{ skill }}</span>
                     {% else %}<p>Add more resume skills to see strengths.</p>{% endfor %}
-                    <h3>You need to improve</h3>
+                    <h3>Improve next</h3>
                     {% for skill in missing %}
-                    <span class="skill-missing">⚠ {{ skill }}</span>
+                    <span class="skill-missing">{{ skill }}</span>
                     {% else %}<p>No major missing skills for this role list.</p>{% endfor %}
-                    <a class="btn" href="{{ url_for('skill_gap') }}">Open skill gap</a>
+                    <div class="header-actions">
+                        <a class="btn" href="{{ url_for('preparation_plan') }}">See My Preparation Plan</a>
+                        <a class="btn btn-outline" href="{{ url_for('skill_gap') }}">Open skill gap</a>
+                    </div>
+                    <details class="more-details">
+                        <summary>View details</summary>
+                        <p>Skills {{ match.skill_score }}% · Text {{ match.text_similarity_score }}% · Neural {{ match.neural_score }}% · Domain {{ 'Yes' if match.domain_match else 'No' }}</p>
+                        <p>{{ match.why }}</p>
+                    </details>
                 </div>
             </section>
             {% endif %}

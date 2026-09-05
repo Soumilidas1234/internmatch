@@ -12,9 +12,9 @@
         <div class="container">
             <section class="split-visual reveal">
                 <div>
-                    <p class="badge">AI Interview Question Generator</p>
-                    <h1>Practice what your target role is likely to demand</h1>
-                    <p class="auth-subtitle">Don't practice random questions. This bank is built from your target role and, optionally, a pasted job description — not from your resume and not the AI Examiner.</p>
+                    <p class="badge">Interview questions</p>
+                    <h1>Practice questions for your target role.</h1>
+                    <p class="auth-subtitle">Build a question bank from your target role or a pasted job description — not from your resume, and not the AI Examiner.</p>
                 </div>
                 <figure class="scene-art">
                     <img src="{{ url_for('static', filename='images/interview-questions.png') }}" alt="Floating interview question cards">
@@ -47,9 +47,9 @@
                         <label class="ri-choice"><input type="radio" name="count" value="20" checked> 20 Questions</label>
                         <label class="ri-choice"><input type="radio" name="count" value="30"> 30 Questions</label>
                     </div>
-                    <div class="ai-loader"><span class="loader-orb"></span> AI is generating interview questions...</div>
+                    <div class="ai-loader"><span class="loader-orb"></span> Building your question bank…</div>
                     <div class="ri-actions">
-                        <button class="btn btn-pulse" type="submit" name="action" value="generate">Generate questions</button>
+                        <button class="btn" type="submit" name="action" value="generate">Generate questions</button>
                         <button class="btn" type="submit" name="action" value="quick">Quick Practice</button>
                         <button class="btn btn-outline" type="submit" name="without_jd" value="1">Generate without Job Description</button>
                         <button class="btn btn-outline" type="submit" name="action" value="weak">Practice Weak Areas</button>
@@ -125,7 +125,7 @@
             {% endif %}
 
             <div class="header-actions">
-                <a class="btn btn-pulse" href="{{ url_for('interview_questions_practice', set_id=record.id) }}">Start Preparation</a>
+                <a class="btn" href="{{ url_for('interview_questions_practice', set_id=record.id) }}">Start Preparation</a>
                 <a class="btn" href="{{ url_for('interview_questions') }}">New bank</a>
                 <a class="btn btn-outline" href="{{ url_for('interview_questions_saved') }}">My Saved Questions</a>
             </div>

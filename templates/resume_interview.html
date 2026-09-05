@@ -12,9 +12,9 @@
         <div class="container">
             <section class="split-visual reveal">
                 <div>
-                    <p class="badge">Resume Interview</p>
-                    <h1>Resume-Based Interview Questions</h1>
-                    <p class="auth-subtitle">Practice explaining the projects, skills, and claims on your own resume. This is not the AI Examiner.</p>
+                    <p class="badge">Resume interview</p>
+                    <h1>Practice defending your own resume.</h1>
+                    <p class="auth-subtitle">Answer questions about the projects, skills, and claims you actually wrote. This is not the AI Examiner.</p>
                 </div>
                 <figure class="scene-art">
                     <img src="{{ url_for('static', filename='images/resume-interview.png') }}" alt="Resume interview hologram">
@@ -23,9 +23,9 @@
 
             {% if not has_resume %}
             <section class="jd-card jd-glow ri-empty">
-                <h2>Upload your resume first to generate personalized interview questions.</h2>
-                <p class="auth-subtitle">InternMatch AI uses the resume you already analyzed. There is no second upload form here.</p>
-                <a class="btn btn-pulse" href="{{ url_for('resume_analyzer') }}">Go to Resume Analysis</a>
+                <h2>No resume analyzed yet</h2>
+                <p>Upload your resume to discover your strengths and generate interview questions from it.</p>
+                <a class="btn" href="{{ url_for('resume_analyzer') }}">Analyze My Resume</a>
             </section>
             {% else %}
             <section class="jd-card jd-glow ri-hotspots">
@@ -66,7 +66,7 @@
                         <label class="ri-choice"><input type="radio" name="count" value="10" checked> 10 Questions</label>
                         <label class="ri-choice"><input type="radio" name="count" value="15"> 15 Questions</label>
                     </div>
-                    <button class="btn btn-pulse" type="submit">Start Resume Interview</button>
+                    <button class="btn" type="submit">Start Resume Interview</button>
                 </form>
             </section>
             {% endif %}

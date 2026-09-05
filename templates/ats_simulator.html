@@ -12,11 +12,9 @@
         <div class="container">
             <section class="split-visual reveal">
                 <div>
-                    <p class="badge">AI-Powered ATS-Style Simulation</p>
-                    <h1>AI ATS Resume Simulator</h1>
-                    <p class="auth-subtitle">See how well your resume is prepared for your target role.</p>
-                    <p class="auth-subtitle">This score is an educational simulation and does not represent the result of any real company's ATS.</p>
-                    <p class="auth-subtitle">AI-powered ATS-style simulation — actual ATS behavior may vary.</p>
+                    <p class="badge">ATS simulator</p>
+                    <h1>Check how your resume covers a role.</h1>
+                    <p class="auth-subtitle">See keyword coverage for your target role. This is an educational check, not a real company ATS.</p>
                 </div>
                 <figure class="scene-art">
                     <img src="{{ url_for('static', filename='images/ats-simulator.png') }}" alt="Resume passing through an AI scanner">
@@ -58,8 +56,8 @@
                         <span>Keyword match</span>
                         <span>ATS-style score</span>
                     </div>
-                    <div class="ai-loader"><span class="loader-orb"></span> AI is scanning your resume...</div>
-                    <button class="btn btn-pulse" type="submit">Run ATS Simulation</button>
+                    <div class="ai-loader"><span class="loader-orb"></span> Checking keyword coverage…</div>
+                    <button class="btn" type="submit">Run ATS Simulation</button>
                 </form>
             </section>
 

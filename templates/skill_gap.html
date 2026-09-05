@@ -11,25 +11,26 @@
     <main class="dashboard-page">
         <div class="container">
             <section class="split-visual reveal">
-                <figure class="scene-art">
-                    <img src="{{ url_for('static', filename='images/skill-analysis.png') }}" alt="Glowing skill network">
-                </figure>
-                <div>
-                    <p class="badge">Skill Gap Analyzer</p>
-                    <h1>What you know vs what {{ target }} needs</h1>
-                    <p class="auth-subtitle">Use this to decide what to learn next. Scores are estimates, not hiring decisions. Bars show presence in your profile, not a hidden skill grade.</p>
+                <div class="page-lead">
+                    <p class="badge">Skill gap</p>
+                    <h1>See what you need to improve.</h1>
+                    <p class="auth-subtitle">Compare what you already know with what {{ target }} typically needs. Use this to decide what to learn next — not as a hiring score.</p>
                     {% if have %}
-                    <div class="skill-nodes" aria-hidden="true">
+                    <div class="skill-nodes">
                         {% for skill in have[:8] %}
                         <span class="skill-node">{{ skill }}</span>
                         {% endfor %}
                     </div>
                     {% endif %}
                 </div>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/skill-analysis.png') }}" alt="Skill comparison illustration">
+                </figure>
             </section>
             {% if need_skills %}
             <section class="empty-state">
-                <h2>Add skills first</h2>
+                <h2>No resume analyzed yet</h2>
+                <p>Upload your resume to discover your strengths and skill gaps.</p>
                 <a class="btn" href="{{ url_for('resume_analyzer') }}">Analyze My Resume</a>
             </section>
             {% else %}

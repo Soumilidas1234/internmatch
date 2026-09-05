@@ -12,9 +12,9 @@
     <main class="auth-page">
         <div class="container split-visual">
             <section class="auth-card">
-                <p class="badge">Create Account</p>
-                <h1>Student Registration</h1>
-                <p class="auth-subtitle">Create a profile and choose a target role to start interview preparation.</p>
+                <p class="badge">Create account</p>
+                <h1>Create your student account</h1>
+                <p class="auth-subtitle">Add a profile and choose a target role to start interview preparation.</p>
 
                 <form method="POST" action="{{ url_for('register') }}">
                     <div class="form-grid">
@@ -70,8 +70,8 @@
 
                 <p class="auth-switch">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
             </section>
-            <figure class="scene-art ai-idle">
-                <img src="{{ url_for('static', filename='images/hero.png') }}" alt="InternMatch AI hologram">
+            <figure class="scene-art">
+                <img src="{{ url_for('static', filename='images/hero.png') }}" alt="InternMatch AI illustration">
             </figure>
         </div>
     </main>

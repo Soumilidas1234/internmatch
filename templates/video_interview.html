@@ -13,19 +13,18 @@
         <div class="container">
             <section class="split-visual reveal">
                 <div>
-                    <p class="badge">Mock Interview</p>
-                    <h1>AI Mock Interview</h1>
-                    <p class="auth-subtitle">Practice answers in a local video-style round. Your camera stays on this computer.</p>
-                    <div class="wave-bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+                    <p class="badge">Mock interview</p>
+                    <h1>Practice before the real interview.</h1>
+                    <p class="auth-subtitle">Speak your answers in a local video-style round. Your camera stays on this computer.</p>
                 </div>
-                <figure class="scene-art ai-idle">
-                    <img src="{{ url_for('static', filename='images/communication-coach.png') }}" alt="Microphone and speech hologram">
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/communication-coach.png') }}" alt="Mock interview illustration">
                 </figure>
             </section>
 
             <section id="lobby" class="arena-stage">
-                <p class="preview-label">Ready to join?</p>
-                <h2>Start a video interview</h2>
+                <p class="preview-label">What happens when you click</p>
+                <h2>Start a mock interview</h2>
                 <p class="auth-subtitle">Allow camera and microphone when the browser asks. You can still type answers if speech is not available.</p>
                 <div class="form-group">
                     <label for="domain">Interview track</label>
@@ -35,7 +34,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <button class="btn btn-pulse" id="joinBtn" type="button">Join Video Call</button>
+                <button class="btn" id="joinBtn" type="button">Start Mock Interview</button>
                 <p id="lobbyStatus" class="match-note"></p>
             </section>
 

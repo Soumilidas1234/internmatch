@@ -12,15 +12,13 @@
     <main class="auth-page">
         <div class="container split-visual">
             <section class="auth-card auth-card-narrow">
-                <p class="badge">Welcome Back</p>
-                <h1>Student Login</h1>
+                <p class="badge">Student login</p>
+                <h1>Welcome back</h1>
                 <p class="auth-subtitle">Log in to analyze your resume, check readiness, and practice interviews.</p>
                 {% if show_demo_login %}
                 <div class="demo-login-card">
                     <p class="preview-label">Examiner demo account</p>
-                    <p>Email: <code>{{ demo_student_email }}</code></p>
-                    <p>Password: <code>{{ demo_student_password }}</code></p>
-                    <p class="auth-subtitle">Use this account to try resume analysis, role readiness, and the AI examiner.</p>
+                    <p>Use the email and password shown in the banner above to try the student tools.</p>
                 </div>
                 {% endif %}
 
@@ -39,8 +37,8 @@
                 <p class="auth-switch">New student? <a href="{{ url_for('register') }}">Create an account</a></p>
                 <p class="auth-switch">Administrator? <a href="{{ url_for('admin.login') }}">Admin login</a></p>
             </section>
-            <figure class="scene-art ai-idle">
-                <img src="{{ url_for('static', filename='images/hero.png') }}" alt="InternMatch AI hologram">
+            <figure class="scene-art">
+                <img src="{{ url_for('static', filename='images/hero.png') }}" alt="InternMatch AI illustration">
             </figure>
         </div>
     </main>

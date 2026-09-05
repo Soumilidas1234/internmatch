@@ -11,13 +11,13 @@
     <main class="dashboard-page">
         <div class="container">
             <section class="split-visual reveal">
-                <div>
-                    <p class="badge">Retry and improve</p>
-                    <h1>Exam progress</h1>
-                    <p class="auth-subtitle">Test → find mistakes → learn → retest. Scores are practice estimates only.</p>
+                <div class="page-lead">
+                    <p class="badge">My progress</p>
+                    <h1 class="page-title">See how your practice is going.</h1>
+                    <p class="auth-subtitle">Test, find mistakes, learn, then try again. These scores are practice estimates only.</p>
                 </div>
                 <figure class="scene-art">
-                    <img src="{{ url_for('static', filename='images/progress.png') }}" alt="Progress hologram">
+                    <img src="{{ url_for('static', filename='images/progress.png') }}" alt="Progress tracking illustration">
                 </figure>
             </section>
             {% if role_q_stats and role_q_stats.practiced %}
@@ -31,6 +31,15 @@
             </section>
             {% endif %}
             {% if attempts %}
+            {% if attempts|length > 1 %}
+            {% set latest = attempts[-1] %}
+            {% set previous = attempts[-2] %}
+            {% set delta = latest.overall_score - previous.overall_score %}
+            <section class="intern-card" style="margin-bottom: 22px;">
+                <h3>Since your previous attempt</h3>
+                <p>You {% if delta > 0 %}improved {{ delta }}%{% elif delta < 0 %}changed {{ delta }}%{% else %}stayed at the same score{% endif %} compared with the previous exam.</p>
+            </section>
+            {% endif %}
             <section class="admin-table-wrap">
                 <table class="admin-table">
                     <thead>
@@ -68,7 +77,8 @@
             {% endif %}
             {% else %}
             <section class="empty-state">
-                <h2>No exams yet</h2>
+                <h2 class="page-title">No exam attempts yet</h2>
+                <p>Take your first assessment to see where you stand.</p>
                 <a class="btn" href="{{ url_for('interview_arena') }}">Start AI Exam</a>
             </section>
             {% endif %}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Resume Analyzer | InternMatch AI</title>
+    <title>Resume Analysis | InternMatch AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -12,24 +12,40 @@
     <main class="dashboard-page">
         <div class="container">
             <section class="split-visual reveal">
-                <div>
-                    <p class="badge">AI Tool</p>
-                    <h1>AI Resume Analyzer</h1>
-                    <p class="auth-subtitle">Paste your resume or upload a .txt / .pdf file. Analysis runs locally.</p>
+                <div class="page-lead">
+                    <p class="badge">Resume Analysis</p>
+                    <h1>Find out what you know.</h1>
+                    <p class="auth-subtitle">Upload your resume. We'll list the skills it actually mentions, plus what to improve for your target role.</p>
                 </div>
-                <figure class="scene-art ai-idle">
-                    <img src="{{ url_for('static', filename='images/resume-analysis.png') }}" alt="3D resume scanning">
-                    <span class="scan-line"></span>
+                <figure class="scene-art">
+                    <img src="{{ url_for('static', filename='images/resume-analysis.png') }}" alt="Resume analysis illustration">
                 </figure>
+            </section>
+
+            <section class="guide-steps">
+                <article class="guide-step">
+                    <span>Step 1</span>
+                    <strong>Upload</strong>
+                    <p>Paste text or add a PDF / TXT file.</p>
+                </article>
+                <article class="guide-step">
+                    <span>Step 2</span>
+                    <strong>We analyze</strong>
+                    <p>Skills are read from your resume — nothing is invented.</p>
+                </article>
+                <article class="guide-step">
+                    <span>Step 3</span>
+                    <strong>See results</strong>
+                    <p>Strengths, gaps, and what to work on next.</p>
+                </article>
             </section>
 
             <section class="auth-card scanner-card">
                 <form method="POST" enctype="multipart/form-data">
                     <label class="drop-scan" for="resume_file">
-                        <span class="preview-label">AI Scanner</span>
-                        <strong>Drop your resume</strong>
-                        <span class="scan-line"></span>
-                        <p>PDF / TXT</p>
+                        <span class="preview-label">Upload resume</span>
+                        <strong>Drop a PDF or TXT file</strong>
+                        <p>Or paste the text below.</p>
                     </label>
                     <div class="form-group">
                         <label for="resume_text">Paste resume text</label>
@@ -40,10 +56,15 @@
                         <input type="file" id="resume_file" name="resume_file" accept=".txt,.pdf">
                     </div>
                     <div class="ai-loader">
-                        <span class="loader-cluster" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                        <span class="loader-orb" aria-hidden="true"></span>
                         <div>
-                            <strong>AI ANALYZING</strong>
-                            <p class="loader-copy">Scanning resume… extracting skills… comparing role requirements…</p>
+                            <strong>Analyzing your resume</strong>
+                            <ol class="analyze-steps">
+                                <li>Uploading</li>
+                                <li>Reading</li>
+                                <li>Finding skills</li>
+                                <li>Preparing analysis</li>
+                            </ol>
                         </div>
                     </div>
                     <div class="header-actions">
@@ -57,44 +78,24 @@
             <p class="success-pop"><span class="check-glow">✓</span> Resume analyzed successfully.</p>
             <section class="result-grid">
                 <article class="profile-card">
-                    <h3>Resume Strength</h3>
+                    <h3>Resume strength</h3>
                     <div class="score-ring" data-score="{{ result.score }}"><span>{{ result.score }}%</span></div>
                 </article>
                 <article class="profile-card">
-                    <h3>Education mentioned</h3>
-                    <p>{% if result.education_found %}Found in resume text{% else %}Not clearly mentioned{% endif %}</p>
+                    <h3>Skills detected</h3>
+                    <p>{{ result.found_skills | join(', ') or 'None detected yet' }}</p>
                 </article>
                 <article class="profile-card">
-                    <h3>Experience mentioned</h3>
-                    <p>{% if result.experience_found %}Found in resume text{% else %}Not clearly mentioned{% endif %}</p>
-                </article>
-                <article class="profile-card">
-                    <h3>Projects mentioned</h3>
-                    <p>{% if result.projects_found %}Found in resume text{% else %}Not clearly mentioned{% endif %}</p>
-                </article>
-                <article class="profile-card">
-                    <h3>Strong areas</h3>
+                    <h3>Strengths</h3>
                     <p>{{ result.strengths | join(', ') or 'None detected from the skill list' }}</p>
                 </article>
                 <article class="profile-card">
-                    <h3>Needs improvement</h3>
+                    <h3>Areas to improve</h3>
                     <p>{{ result.weak_areas | join(', ') or 'None from the target-role list' }}</p>
                 </article>
                 <article class="profile-card">
-                    <h3>Best Fit Domain</h3>
-                    <p>{{ result.domain }}</p>
-                </article>
-                <article class="profile-card">
-                    <h3>Word Count</h3>
-                    <p>{{ result.word_count }}</p>
-                </article>
-                <article class="profile-card">
-                    <h3>Detected Skills</h3>
-                    <p>{{ result.found_skills | join(', ') }}</p>
-                </article>
-                <article class="profile-card">
-                    <h3>Skill Gaps</h3>
-                    <p>{{ result.missing_skills | join(', ') }}</p>
+                    <h3>Skill gaps</h3>
+                    <p>{{ result.missing_skills | join(', ') or 'None from this role list' }}</p>
                 </article>
                 <article class="profile-card profile-card-wide">
                     <h3>Suggestions</h3>
@@ -104,6 +105,14 @@
                         {% endfor %}
                     </ul>
                     <a class="btn btn-small" href="{{ url_for('resume_fixer') }}">Rebuild for your target role</a>
+                    <details class="more-details">
+                        <summary>View details</summary>
+                        <p>Education mentioned: {% if result.education_found %}Found{% else %}Not clearly mentioned{% endif %}</p>
+                        <p>Experience mentioned: {% if result.experience_found %}Found{% else %}Not clearly mentioned{% endif %}</p>
+                        <p>Projects mentioned: {% if result.projects_found %}Found{% else %}Not clearly mentioned{% endif %}</p>
+                        <p>Best-fit domain: {{ result.domain }}</p>
+                        <p>Word count: {{ result.word_count }}</p>
+                    </details>
                 </article>
             </section>
             {% endif %}
