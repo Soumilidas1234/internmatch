@@ -1003,9 +1003,13 @@ button.btn {
     position: relative;
     min-height: 280px;
     overflow: hidden;
-    border-radius: 22px;
-    background: #03110f;
-    border: 1px solid rgba(110, 231, 183, 0.2);
+    border-radius: 16px;
+    background: #0F172A;
+    border: 1px solid #1E293B;
+}
+
+.you-tile {
+    overflow: visible;
 }
 
 .call-tile img,
@@ -1014,6 +1018,10 @@ button.btn {
     height: 320px;
     object-fit: cover;
     display: block;
+    border-radius: 16px;
+    filter: none;
+    mix-blend-mode: normal;
+    transform: none;
 }
 
 .ai-tile.talking {

@@ -59,6 +59,12 @@ async function startCamera() {
     try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         userVideo.srcObject = mediaStream;
+        userVideo.muted = true;
+        try {
+            await userVideo.play();
+        } catch (playError) {
+            /* Stream is attached; a later gesture can start playback. */
+        }
         cameraOff.classList.add("hidden");
         cameraOn = true;
     } catch (error) {
