@@ -18,21 +18,6 @@ const cameraBtn = document.getElementById("cameraBtn");
 const submitBtn = document.getElementById("submitBtn");
 const endBtn = document.getElementById("endBtn");
 
-function resetWebcamPaint(el) {
-    if (!el) {
-        return;
-    }
-    el.style.setProperty("filter", "none", "important");
-    el.style.setProperty("-webkit-filter", "none", "important");
-    el.style.setProperty("mix-blend-mode", "normal", "important");
-    el.style.setProperty("opacity", "1", "important");
-    el.style.setProperty("transform", "none", "important");
-    el.style.setProperty("background", "#111827", "important");
-    el.style.setProperty("color-scheme", "only dark", "important");
-}
-
-resetWebcamPaint(userVideo);
-
 let mediaStream = null;
 let cameraOn = true;
 let questions = [];
@@ -72,10 +57,11 @@ function askCurrentQuestion() {
 
 async function startCamera() {
     try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 640 }, height: { ideal: 480 } },
+            audio: true,
+        });
         userVideo.srcObject = mediaStream;
-        userVideo.muted = true;
-        resetWebcamPaint(userVideo);
         try {
             await userVideo.play();
         } catch (playError) {

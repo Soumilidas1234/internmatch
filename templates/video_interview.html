@@ -8,7 +8,7 @@
 </head>
 <body class="video-interview-page">
     {% include "partials/navbar.html" %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}?v=natural-cam-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}?v=plain-cam-1">
 
     <main class="dashboard-page">
         <div class="container">
@@ -47,9 +47,7 @@
                         <p class="speaking-label" id="aiSpeaking">Connecting...</p>
                     </article>
                     <article class="call-tile you-tile">
-                        <div class="you-feed">
-                            <video id="userVideo" class="user-video" autoplay playsinline muted disablepictureinpicture style="filter:none;-webkit-filter:none;mix-blend-mode:normal;opacity:1;transform:none;background:#111827;color-scheme:only dark;"></video>
-                        </div>
+                        <video id="userVideo" autoplay muted playsinline></video>
                         <div class="camera-off hidden" id="cameraOff">Camera off</div>
                         <div class="call-name">{{ user.name }} · You</div>
                     </article>
@@ -82,6 +80,6 @@
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='js/video_interview.js') }}?v=natural-cam-1"></script>
+    <script src="{{ url_for('static', filename='js/video_interview.js') }}?v=plain-cam-1"></script>
 </body>
 </html>
