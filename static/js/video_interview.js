@@ -146,7 +146,6 @@ async function startCamera() {
     try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
             video: true,
-            audio: true,
         });
         userVideo.srcObject = mediaStream;
         try {

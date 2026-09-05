@@ -8,7 +8,7 @@
 </head>
 <body class="video-interview-page">
     {% include "partials/navbar.html" %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}?v=cam-rgb-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}?v=cam-rgb-2">
 
     <main class="dashboard-page">
         <div class="container">
@@ -26,7 +26,7 @@
             <section id="lobby" class="arena-stage">
                 <p class="preview-label">What happens when you click</p>
                 <h2>Start a mock interview</h2>
-                <p class="auth-subtitle">Allow camera and microphone when the browser asks. You can still type answers if speech is not available.</p>
+                    <p class="auth-subtitle">This is practice on this website — not a real phone call. Allow the camera when asked. The microphone is used only if you click Speak.</p>
                 <div class="form-group">
                     <label for="domain">Interview track</label>
                     <select id="domain">
@@ -65,22 +65,22 @@
                     <button class="call-btn" id="micBtn" type="button">🎙️ Speak</button>
                     <button class="call-btn" id="cameraBtn" type="button">📷 Camera</button>
                     <button class="btn" id="submitBtn" type="button">Send Answer</button>
-                    <button class="call-btn end-btn" id="endBtn" type="button">End Call</button>
+                    <button class="call-btn end-btn" id="endBtn" type="button">End Interview</button>
                 </div>
                 <p id="callStatus" class="match-note"></p>
             </section>
 
             <section id="resultScreen" class="arena-stage hidden">
-                <p class="badge">Call Ended</p>
+                <p class="badge">Interview ended</p>
                 <h2 id="finalRank">Interview complete</h2>
                 <p class="big-score" id="finalScore">0/100</p>
             <p id="finalNote" class="auth-subtitle">Clarity, structure, and professionalism are reflected in this practice score from your answers — not a hiring decision.</p>
                 <div id="resultList"></div>
-                <a class="btn" href="{{ url_for('video_interview') }}">Join Again</a>
+                <a class="btn" href="{{ url_for('video_interview') }}">Practice again</a>
             </section>
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='js/video_interview.js') }}?v=cam-rgb-1"></script>
+    <script src="{{ url_for('static', filename='js/video_interview.js') }}?v=cam-rgb-2"></script>
 </body>
 </html>
